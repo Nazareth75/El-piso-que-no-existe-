@@ -1,0 +1,38 @@
+{
+  "ppu": 100,
+  "pixelDeArte": 4,
+  "nota": "1 px de arte = 4 px de textura = 0.04 unidades. El personaje no está en la escena. La altura de referencia es la cápsula actual del jugador.",
+  "personaje": {
+    "altoMundo": 2.2,
+    "altoPixelesDeArte": 55,
+    "spriteFuente": "402x386 px, escala visual 0.55, PPU 100"
+  },
+  "puertaAltoMundo": 2.72,
+  "techoSobreElSuelo": 4.16,
+  "sueloY": 0.64,
+  "fondo": {
+    "arteAncho": 450,
+    "arteAlto": 136,
+    "texturaAncho": 1800,
+    "texturaAlto": 544,
+    "mundoAncho": 18,
+    "mundoAlto": 5.44
+  },
+  "punto": {
+    "arte": 18,
+    "textura": 72,
+    "mundo": 0.72
+  },
+  "camara": {
+    "orthoSize": 2.72,
+    "y": 2.72
+  },
+  "recorrido": [
+    "Campus_EntradaPrincipal",
+    "Campus_Recepcion",
+    "Campus_HallPrincipal",
+    "Campus_Escaleras",
+    "Campus_PasilloPiso1",
+    "Campus_LabHistologia"
+  ]
+}

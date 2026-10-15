@@ -1,22 +1,24 @@
-# Piso7-2D
+# UNIFRANZ: El Piso que no Existe (Piso7-2D)
 
 ## Descripción
 
-Piso7-2D es un videojuego 2D de terror, misterio y aventura. El jugador deberá explorar un entorno inquietante y cargado de secretos, avanzando por distintas secciones del escenario mientras descubre pistas sobre lo que ocurre en el "Piso 7". La ambientación busca generar tensión y curiosidad a través de la atmósfera visual y el diseño del escenario.
+Piso7-2D es un videojuego 2D de aventura, misterio y terror universitario, desarrollado en Unity. El jugador explora distintos escenarios, descubre lugares de la universidad e interactúa con elementos del entorno mientras avanza en la historia del Piso 7.
 
 ## Género
 
-Terror, Misterio, Aventura.
+Aventura, misterio y terror.
 
-## Plataforma objetivo
+## Plataforma
 
 PC (Windows).
 
 ## Tecnologías
 
-- Unity
-- Git
-- GitHub
+- Unity 6000.3.16f1
+- C#
+- Git y GitHub
+- Aseprite para los recursos gráficos
+- Python para herramientas de generación de escenas y exportación de arte
 
 ## Integrantes
 
@@ -25,44 +27,86 @@ PC (Windows).
 - Katlen – [lpzekathlenlennyescalantesi-cyber]
 - Jose Escarzo – [JoseEscarzo]
 
-## Estado del proyecto
+## Características implementadas
 
-Prototipo inicial.
+- Movimiento lateral del personaje.
+- Caminar, correr y saltar.
+- Cámara con seguimiento del jugador.
+- Sistema de interacción con objetos y puertas.
+- HUD para mostrar información del juego.
+- Menú principal y recursos de interfaz.
+- Fondos y animación de introducción de UNIFRANZ.
+- Recorrido por diferentes espacios del campus universitario.
+
+## Abrir el proyecto
+
+1. Abrir Unity Hub.
+2. Seleccionar **Add** y después **Add project from disk**.
+3. Elegir la carpeta del proyecto `Piso7-2D`.
+4. Abrirlo con Unity **6000.3.16f1**.
+
+## Primer arranque
+
+En Unity, utilizar el menú **Piso7** para ejecutar las herramientas de configuración:
+
+1. **Configurar importación Pixel Art**.
+2. **Crear escena Nivel 1 (Entrada)**.
+3. Opcionalmente, crear la escena de introducción de UNIFRANZ.
+4. Crear el recorrido **Descubre el campus** si se desea probar esa funcionalidad.
+
+Después, abrir la escena correspondiente y pulsar **Play**.
+
+## Controles
+
+| Acción | Tecla |
+|---|---|
+| Moverse | A / D o flechas |
+| Correr | Shift |
+| Saltar | Espacio |
+| Interactuar | E |
+
+Los controles disponibles pueden variar según la escena.
 
 ## Estructura del proyecto
 
-El proyecto está organizado dentro de la carpeta `Assets/` de la siguiente manera:
-
+```text
+Piso7-2D/
+├── Assets/
+│   ├── Art/
+│   │   ├── Backgrounds/
+│   │   ├── Campus/
+│   │   ├── Player/
+│   │   ├── Exported/
+│   │   └── SourceAse/
+│   ├── Resources/
+│   ├── Scenes/
+│   │   └── Campus/
+│   ├── Scripts/
+│   │   ├── Player/
+│   │   ├── Camera/
+│   │   ├── Interaction/
+│   │   ├── Core/
+│   │   ├── Campus/
+│   │   └── Editor/
+│   └── Prefabs/
+├── Packages/
+├── ProjectSettings/
+├── Tools/
+└── README.md
 ```
-Assets/
-├── Art/
-│   ├── Backgrounds/   → Fondos utilizados en las escenas
-│   ├── Characters/    → Sprites y assets de personajes
-│   ├── Tiles/         → Tiles utilizados para construir el escenario
-│   └── UI/            → Elementos gráficos de interfaz
-├── Scenes/            → Escenas del juego (ej. Nivel01.unity)
-├── Prefabs/           → Prefabs reutilizables del proyecto
-└── Materials/         → Materiales utilizados en el proyecto
-```
 
-## Ejecución
+## Herramientas de arte
 
-1. Clonar este repositorio:
-```
-git clone https://github.com/JoseEscarzo/Piso7-2D.git
-```
-2. Abrir Unity Hub.
-3. Click en "Añadir" → "Añadir proyecto desde el disco" y seleccionar la carpeta clonada.
-4. Abrir el proyecto con la versión de Unity indicada (6000.3.16f1 o superior compatible).
-5. Dentro de Unity, ir a `Assets/Scenes/` y abrir la escena `Nivel01.unity`.
-6. Presionar Play para visualizar la escena inicial.
+El proyecto incluye recursos gráficos y archivos originales de Aseprite. También cuenta con herramientas Python para exportar recursos y generar escenas.
 
-## Assets
+## Flujo de trabajo con Git
 
-## Flujo de trabajo
+- **main:** rama destinada a la versión estable.
+- **develop:** rama de integración del desarrollo.
+- **feature/***: ramas para trabajar en funcionalidades específicas.
 
-El proyecto utiliza un flujo de trabajo basado en tres niveles de ramas:
+Los cambios se integran mediante merge o Pull Request, revisando los conflictos antes de finalizar la integración.
 
-- **main**: representa la versión estable del proyecto. No se trabaja directamente sobre ella.
-- **develop**: rama principal de desarrollo durante el semestre. Todos los cambios se integran progresivamente aquí.
-- **feature/***: ramas específicas para desarrollar tareas puntuales (ej. `feature/escenario-inicial`, `feature/fondo-principal`, `feature/tiles-nivel01`). Una vez finalizada la tarea, se integran a `develop` mediante merge o Pull Request.
+## Estado del proyecto
+
+Prototipo en desarrollo. Las próximas mejoras pueden incluir nuevos niveles, puzzles, sigilo, entidades y guardado de partidas.

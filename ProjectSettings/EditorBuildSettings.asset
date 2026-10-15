@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 7bef7ae33e9c4401b58c867b47b0714f
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_EntradaPrincipal.unity
+    guid: 6a2ca5fee8fe45daac05b58be9565bb1
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Recepcion.unity
+    guid: 9ff2507149b0401aa7cd6057c56fc3da
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_HallPrincipal.unity
+    guid: 52c7e3e35b7d4979a825f6166465f016
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Admisiones.unity
+    guid: 344799e1130645809c2841cb419be880
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Clinica.unity
+    guid: d33ac9d390f2484ba2aa671e87bca528
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Cafeteria.unity
+    guid: 800838c8da364ae4b373fb1aff810dd9
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Auditorio.unity
+    guid: 87435c6f6fc44594905e154e5ee354fd
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Escaleras.unity
+    guid: 49c6bc9980b34f79ad425e2782933efb
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Subsuelo.unity
+    guid: c0c40787bd0b4b70b128561844a9c224
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Mezanine.unity
+    guid: e76230a9302c4cd0befaf1c1d08fc28b
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_PasilloPiso1.unity
+    guid: 0896e0665db94ecbbaae68f700654b71
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_LabHistologia.unity
+    guid: 840cd2b2aa8c4cba8761f9355f4e479b
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Piso2.unity
+    guid: 1afd72e1f10541a59e3ff8b20568f971
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Piso3.unity
+    guid: 7af5ffb9ecf249a18ea295356c47bf57
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Piso4.unity
+    guid: 6d5f3a6834384148862f3b93ee079524
+  - enabled: 1
+    path: Assets/Scenes/Campus/Campus_Piso5.unity
+    guid: 39df8b55419843bd9531b36ff56158c5
+  - enabled: 1
+    path: Assets/Scenes/SampleScene.unity
+    guid: 8c9cfa26abfee488c85f1582747f6a02
+  m_configObjects:
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
+  m_UseUCBPForAssetBundles: 0
