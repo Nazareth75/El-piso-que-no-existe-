@@ -14,6 +14,7 @@ public class JuegoSimple : MonoBehaviour
     Animator animacionMonstruo;
     Vector3 inicioPlayer, inicioMonstruo;
     bool gameOver;
+    bool ganaste;
     public bool Termino => gameOver;
 
     void Awake()
@@ -30,6 +31,13 @@ public class JuegoSimple : MonoBehaviour
         animacionMonstruo = monstruo.GetComponent<Animator>();
         inicioPlayer = transform.position;
         inicioMonstruo = monstruo.position;
+        foreach (var objeto in FindObjectsByType<Transform>(FindObjectsSortMode.None))
+        {
+            if (!EsActivadorVictoria(objeto.name)) continue;
+            var activador = objeto.GetComponent<Collider2D>();
+            if (activador == null) activador = objeto.gameObject.AddComponent<CircleCollider2D>();
+            activador.isTrigger = true;
+        }
     }
 
     void FixedUpdate()
@@ -52,12 +60,33 @@ public class JuegoSimple : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D choque)
     {
+        if (TocaVictoria(choque.transform)) { Ganar(); return; }
         if (choque.transform == monstruo) Perder();
     }
 
     void OnTriggerEnter2D(Collider2D otro)
     {
+        if (TocaVictoria(otro.transform)) { Ganar(); return; }
         if (otro.transform == monstruo) Perder();
+    }
+
+    static bool EsActivadorVictoria(string nombre)
+    {
+        return nombre.Replace(" ", "").Replace("_", "").ToLowerInvariant().StartsWith("activadorvictoria");
+    }
+
+    static bool TocaVictoria(Transform objeto)
+    {
+        for (var actual = objeto; actual != null; actual = actual.parent)
+            if (EsActivadorVictoria(actual.name)) return true;
+        return false;
+    }
+
+    void Ganar()
+    {
+        if (gameOver) return;
+        ganaste = true;
+        Perder();
     }
 
     void Perder()
@@ -83,6 +112,7 @@ public class JuegoSimple : MonoBehaviour
         cuerpoMonstruo.linearVelocity = Vector2.zero;
         if (animacionMonstruo != null) animacionMonstruo.enabled = true;
         gameOver = false;
+        ganaste = false;
     }
 
     void OnGUI()
@@ -93,8 +123,8 @@ public class JuegoSimple : MonoBehaviour
         Rect panel = new Rect((Screen.width - 340) / 2f, (Screen.height - 180) / 2f, 340, 180);
         GUI.Box(panel, "");
         GUIStyle titulo = new GUIStyle(GUI.skin.label) { fontSize = 32, alignment = TextAnchor.MiddleCenter };
-        GUI.Label(new Rect(panel.x, panel.y + 20, panel.width, 45), "GAME OVER", titulo);
-        GUI.Label(new Rect(panel.x, panel.y + 70, panel.width, 25), "El monstruo te atrapo.",
+        GUI.Label(new Rect(panel.x, panel.y + 20, panel.width, 45), ganaste ? "GANASTE" : "GAME OVER", titulo);
+        GUI.Label(new Rect(panel.x, panel.y + 70, panel.width, 25), ganaste ? "" : "El monstruo te atrapo.",
             new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter });
         if (GUI.Button(new Rect(panel.x + 80, panel.y + 115, 180, 40), "Reintentar")) Reiniciar();
     }
