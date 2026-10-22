@@ -82,7 +82,7 @@ public static class NavigationButtonsSetup
                 if(icon==null) {icon=new GameObject("BotonAcceso").transform; icon.SetParent(point.transform,false);}
                 var renderer=icon.GetComponent<SpriteRenderer>(); if(renderer==null) renderer=icon.gameObject.AddComponent<SpriteRenderer>();
                 renderer.sprite=isExit?exit:enter; renderer.sharedMaterial=source.sharedMaterial; renderer.sortingOrder=10;
-                icon.localPosition=new Vector3(0,.3f,0); icon.localScale=Vector3.one*(1.3f/renderer.sprite.bounds.size.y);
+                icon.localPosition=new Vector3(0,.3f,0); icon.localScale=new Vector3(0.0882f,0.0948f,0.1886f);
                 var collider=point.GetComponent<BoxCollider2D>(); if(collider!=null) {collider.size=new Vector2(1.4f,1.4f); collider.offset=new Vector2(0,.3f);}
                 EditorUtility.SetDirty(point); count++; sceneChanged=true;
             }

@@ -222,8 +222,8 @@ namespace Piso7.Core
         {
             var text = Label(parent, font,
                 Application.isMobilePlatform
-                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar    ATACAR: golpear (dos golpes)\nUSAR: interactuar con puertas y ascensor\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
-                    : "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; dos golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
+                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar    ATACAR: golpear (tres golpes)\nUSAR: interactuar con puertas y ascensor\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
+                    : "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; tres golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
                 26, new Vector2(0f, 20f));
             text.alignment = TextAnchor.MiddleCenter;
             text.rectTransform.sizeDelta = new Vector2(760f, 280f);
@@ -325,6 +325,28 @@ namespace Piso7.Core
             if (_help != null)
                 _help.SetActive(true);
         }
+
+        public void ShowFallRecovery()
+        {
+            ClosePanels();
+            if (_outcome != null) Destroy(_outcome);
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _outcome = Panel(font, "Fuera del recorrido", out var body);
+            Label(body, font, "Te devolvimos a una zona segura.", 26, new Vector2(0, 80));
+            TextButton(body, font, "Volver al juego", new Vector2(0, -50), () =>
+            { Destroy(_outcome); _outcome = null; Show(false); });
+            TextButton(body, font, "Menú principal", new Vector2(0, -170), OnHome);
+            Time.timeScale = 1f;
+            Show(true); _outcome.SetActive(true); _outcome.transform.SetAsLastSibling();
+        }
+
+        void OnGUI()
+        {
+            if (SceneManager.GetActiveScene().name == MenuScene || _outcome != null || BloqueaJuego) return;
+            if (GUI.Button(new Rect(12, 42, 135, 34), "Menú / Pausa")) OpenOverGame();
+        }
+
+        public void ReturnToMainMenu() => OnHome();
 
         void OnHome()
         {

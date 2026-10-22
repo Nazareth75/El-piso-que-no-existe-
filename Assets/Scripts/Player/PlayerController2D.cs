@@ -30,6 +30,10 @@ namespace Piso7.Player
         [SerializeField] bool faceLeftOnStart;
         Rigidbody2D _rb;
         SpriteRenderer _sprite;
+        Collider2D _bodyCollider;
+        Collider2D _floor;
+        Vector2 _spawn;
+        bool _fallHandled;
         float _moveInput;
         bool _jumpPressed;
         bool _runHeld;
@@ -45,6 +49,10 @@ namespace Piso7.Player
         void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
+            _bodyCollider = GetComponent<Collider2D>();
+            _spawn = transform.position;
+            foreach (var root in gameObject.scene.GetRootGameObjects())
+                if (root.name == "Suelo") _floor = root.GetComponent<Collider2D>();
             _sprite = GetComponentInChildren<SpriteRenderer>();
             _facingRight = !faceLeftOnStart;
             if (_sprite != null) _sprite.flipX = faceLeftOnStart;
@@ -63,6 +71,18 @@ namespace Piso7.Player
 
         void Update()
         {
+            if (transform.position.y < (_floor != null ? _floor.bounds.min.y - 5f : -10f))
+            {
+                if (!_fallHandled)
+                {
+                    _fallHandled = true;
+                    _rb.linearVelocity = Vector2.zero;
+                    _rb.position = _spawn;
+                    if (Core.GameMenu.Instance != null) Core.GameMenu.Instance.ShowFallRecovery();
+                }
+                return;
+            }
+            _fallHandled = false;
             ReadInput();
             UpdateFacing();
             UpdateGroundedMemory();
@@ -73,6 +93,16 @@ namespace Piso7.Player
         void FixedUpdate()
         {
             if (!_rb.simulated) return;
+            if (_floor != null && _bodyCollider != null)
+            {
+                float halfWidth = _bodyCollider.bounds.extents.x;
+                float min = _floor.bounds.min.x + halfWidth;
+                float max = _floor.bounds.max.x - halfWidth;
+                var pos = _rb.position;
+                pos.x = Mathf.Clamp(pos.x, min, max);
+                _rb.position = pos;
+                if ((_moveInput < 0f && pos.x <= min + 0.03f) || (_moveInput > 0f && pos.x >= max - 0.03f)) _moveInput = 0f;
+            }
             float targetSpeed = IsRunning ? runSpeed : walkSpeed;
             _rb.linearVelocity = new Vector2(_moveInput * targetSpeed, _rb.linearVelocity.y);
         }

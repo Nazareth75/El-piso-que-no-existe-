@@ -16,7 +16,17 @@ namespace Piso7.Core
         public static bool Attack { get; private set; }
         public static bool Interact { get; private set; }
         public static bool Pause { get; private set; }
-        public static bool Enabled => Application.isMobilePlatform || Application.isEditor;
+        public static bool Enabled
+        {
+            get
+            {
+#if UNITY_ANDROID || UNITY_IOS
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
         static MobileControls instance;
         readonly List<MobileHoldButton> buttons = new List<MobileHoldButton>();
         RectTransform safeArea;

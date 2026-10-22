@@ -20,7 +20,7 @@ public class JuegoSimple : MonoBehaviour
     Collider2D playerHitbox, enemyHitbox;
     float stunnedUntil;
     const float AttackReach = 2.5f;
-    const int AttackDamage = 2;
+    const int AttackDamage = 1;
     Piso7.Player.PlayerController2D campusPlayer;
     int enemyHealth = 3;
     float nextAttack, nextDamage, hitFlashUntil;
@@ -241,7 +241,7 @@ public class JuegoSimple : MonoBehaviour
             var hudSprite = Resources.Load<Sprite>("Menu/panel");
             if (hudSprite != null) GUI.DrawTexture(area, hudSprite.texture);
             var style = new GUIStyle(GUI.skin.label) { fontSize = Mathf.Clamp(Screen.width / 65, 12, 20), alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(0.12f, 0.18f, 0.28f) } };
-            GUI.Label(area, "Vida: " + Piso7.Core.GameSession.Ensure().Health + "   Enemigo: " + enemyHealth + "/3\n" + (Application.isMobilePlatform ? "Botón ATACAR: dos golpes" : "F / clic derecho: dos golpes"), style);
+            GUI.Label(area, "Vida: " + Piso7.Core.GameSession.Ensure().Health + "   Enemigo: " + enemyHealth + "/3\n" + (Application.isMobilePlatform ? "Botón ATACAR: tres golpes" : "F / clic derecho: tres golpes"), style);
         }
         if (!gameOver || CampusCombat) return;
         GUI.depth = -100;

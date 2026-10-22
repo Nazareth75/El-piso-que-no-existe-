@@ -96,10 +96,10 @@ public static class PlayableValidation
                     Game.velocidadMonstruo = 0f;
                     Game.monstruo.GetComponent<Rigidbody2D>().position = Game.transform.position + new Vector3(1.3f, 0f, 0f);
                     Physics2D.SyncTransforms(); Key(UnityEngine.InputSystem.Key.F); Game.SendMessage("Update"); Key();
-                    Check(Game.EnemyHealth == 1, "F input attacks enemy gender=" + gender); Go(6); break;
+                    Check(Game.EnemyHealth == 2, "F input attacks enemy gender=" + gender); Go(6); break;
                 case 6:
                     Game.monstruo.GetComponent<Rigidbody2D>().position = Game.transform.position + new Vector3(1.3f, 0f, 0f);
-                    Check(Game.TryAttack() && Game.EnemyHealth == 0, "Second hit defeats enemy gender=" + gender); Go(8); break;
+                    Check(Game.TryAttack() && Game.EnemyHealth == 1, "Second hit damages enemy gender=" + gender); Go(7); break;
                 case 7:
                     Game.monstruo.GetComponent<Rigidbody2D>().position = Game.transform.position + new Vector3(1.3f, 0f, 0f);
                     Check(Game.TryAttack(), "Third hit gender=" + gender); Go(8); break;
@@ -131,12 +131,25 @@ public static class PlayableValidation
                     }
                     break;
                 case 20:
-                    if (campusIndex >= campus.Length) { Key(); Go(99); EditorApplication.isPlaying = false; break; }
+                    if (campusIndex >= campus.Length) { Key(); SceneManager.LoadScene("Campus_Clinica"); Go(30); break; }
                     SceneManager.LoadScene(campus[campusIndex++]); Go(21); break;
                 case 21:
                     CheckVisual();
                     var hotspot = UnityEngine.Object.FindFirstObjectByType<Piso7.Campus.CampusHotspot>(); destination = hotspot.TargetScene;
                     Check(Application.CanStreamedLevelBeLoaded(destination), "Build target " + destination); hotspot.Activar(); Go(22); break;
+                case 30:
+                    Check(!MobileControls.Enabled, "Windows/editor standalone hides touch controls");
+                    var boundaryPlayer = GameObject.Find("Player").GetComponent<Rigidbody2D>();
+                    boundaryPlayer.position = new Vector2(25f, 1.7f); Go(31); break;
+                case 31:
+                    Check(GameObject.Find("Player").transform.position.x < 18f, "Floor edge clamps player inside walkway");
+                    GameObject.Find("Player").GetComponent<Rigidbody2D>().position = new Vector2(6f, -20f); Go(32); break;
+                case 32:
+                    Check(GameObject.Find("Player").transform.position.y > -5f && GameMenu.BloqueaJuego, "Fall recovery returns player and opens options");
+                    Button("Menú principal").onClick.Invoke(); Go(33); break;
+                case 33:
+                    Check(SceneManager.GetActiveScene().name == "MainMenu", "Fall menu returns to MainMenu without restart");
+                    Key(); Go(99); EditorApplication.isPlaying = false; break;
                 case 22:
                     Check(SceneManager.GetActiveScene().name == destination, "Campus transition " + destination); Go(20); break;
             }
