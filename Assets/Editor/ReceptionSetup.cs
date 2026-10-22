@@ -66,8 +66,10 @@ public static class ReceptionSetup
                     Check(SceneManager.GetActiveScene().name=="Campus_Clinica","Acercarse y detenerse activa recepcion -> clinica");
                     var back=GameObject.Find("Punto_Recepcion");
                     Check(back!=null,"Clinica conserva salida hacia recepcion");
-                    Check(back.transform.Find("BotonAcceso").GetComponent<SpriteRenderer>().sprite.name=="Salir","Boton rojo de salida asignado");
                     if(back==null) { SessionState.SetInt("ReceptionTest",99); EditorApplication.isPlaying=false; break; }
+                    var exitIcon = back.transform.Find("BotonAcceso");
+                    var exitRenderer = exitIcon != null ? exitIcon.GetComponent<SpriteRenderer>() : null;
+                    Check(exitRenderer != null && exitRenderer.sprite != null && exitRenderer.sprite.name=="Salir","Boton rojo de salida asignado");
                     approachStarted=Time.time;
                     player.GetComponent<Rigidbody2D>().position=back.transform.position;
                     SessionState.SetInt("ReceptionTest",4); break;

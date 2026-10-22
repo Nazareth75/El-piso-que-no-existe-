@@ -127,3 +127,7 @@ En `Campus_EntradaPrincipal`, A/D o flechas mueven, Shift corre, Espacio salta y
 
 **Tools > Equipo > Probar flujo jugable** ejecuta la regresión para ambos personajes y las transiciones. Durante la prueba no uses el teclado; se inyectan entradas y se recolocan actores únicamente en memoria para comprobar daños y resultados. El informe queda en `Library/PlayableValidation/report.txt`. Al terminar sale de Play y abre MainMenu. La escena ya tiene al enemigo y las referencias guardadas; no necesitas ejecutar ninguna herramienta de configuración para jugar.
 
+
+## Corrección de combate con personajes ampliados
+
+El alcance usa la distancia real entre colisiones, no los centros escalados. F, clic derecho y ATACAR táctil ejecutan el mismo ataque. Dos golpes derrotan al enemigo; cada golpe lo aturde durante 1,2 segundos. El contacto causa 10 puntos de daño como máximo cada 1,5 segundos y no causa daño durante el aturdimiento. La colisión del enemigo de la entrada se estrechó sin cambiar su escala visual. Deben volver a generarse el APK y el ejecutable para incluir estas correcciones: los archivos exportados anteriormente no cambian solos.

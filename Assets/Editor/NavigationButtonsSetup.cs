@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.U2D.Sprites;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -25,10 +26,21 @@ public static class NavigationButtonsSetup
         importer.textureType=TextureImporterType.Sprite; importer.spriteImportMode=SpriteImportMode.Multiple;
         importer.spritePixelsPerUnit=100; importer.maxTextureSize=4096; importer.filterMode=FilterMode.Point;
         importer.mipmapEnabled=false; importer.alphaIsTransparency=true; importer.textureCompression=TextureImporterCompression.Uncompressed;
-        importer.spritesheet=new[] {
-            new SpriteMetaData {name="Ingresar",rect=new Rect(287,19,799,689),alignment=9,pivot=new Vector2(.5f,.5f)},
-            new SpriteMetaData {name="Salir",rect=new Rect(1140,20,849,688),alignment=9,pivot=new Vector2(.5f,.5f)}
+        var factories = new SpriteDataProviderFactories();
+        factories.Init();
+        var provider = factories.GetSpriteEditorDataProviderFromObject(importer);
+        if (provider == null) throw new InvalidOperationException("No se pudo abrir el importador de los botones.");
+        provider.InitSpriteEditorDataProvider();
+        var existingRects = provider.GetSpriteRects();
+        var rects = new[] {
+            new SpriteRect { name="Ingresar", rect=new Rect(287,19,799,689), alignment=SpriteAlignment.Custom, pivot=new Vector2(.5f,.5f), spriteID=existingRects.FirstOrDefault(x=>x.name=="Ingresar")?.spriteID ?? GUID.Generate() },
+            new SpriteRect { name="Salir", rect=new Rect(1140,20,849,688), alignment=SpriteAlignment.Custom, pivot=new Vector2(.5f,.5f), spriteID=existingRects.FirstOrDefault(x=>x.name=="Salir")?.spriteID ?? GUID.Generate() }
         };
+        provider.SetSpriteRects(rects);
+        var names = provider.GetDataProvider<ISpriteNameFileIdDataProvider>();
+        if (names == null) throw new InvalidOperationException("El importador no permite conservar los identificadores de los botones.");
+        names.SetNameFileIdPairs(rects.Select(x=>new SpriteNameFileIdPair(x.name,x.spriteID)));
+        provider.Apply();
         importer.SaveAndReimport();
         var sprites=AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
         var enter=sprites.First(x=>x.name=="Ingresar"); var exit=sprites.First(x=>x.name=="Salir");

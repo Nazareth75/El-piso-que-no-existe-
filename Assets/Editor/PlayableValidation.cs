@@ -59,7 +59,7 @@ public static class PlayableValidation
     static void Tick()
     {
         if (File.Exists("Temp/playable-validation.request") && !EditorApplication.isCompiling && !EditorApplication.isUpdating)
-        { File.Delete("Temp/playable-validation.request"); Run(); return; }
+        { try { File.Delete("Temp/playable-validation.request"); } catch (IOException) { return; } Run(); return; }
         int step = SessionState.GetInt(StepKey, 0);
         if (step == 0 || EditorApplication.isCompiling) return;
         if (step == 99 && !EditorApplication.isPlaying)
@@ -96,10 +96,10 @@ public static class PlayableValidation
                     Game.velocidadMonstruo = 0f;
                     Game.monstruo.GetComponent<Rigidbody2D>().position = Game.transform.position + new Vector3(1.3f, 0f, 0f);
                     Physics2D.SyncTransforms(); Key(UnityEngine.InputSystem.Key.F); Game.SendMessage("Update"); Key();
-                    Check(Game.EnemyHealth == 2, "F input attacks enemy gender=" + gender); Go(6); break;
+                    Check(Game.EnemyHealth == 1, "F input attacks enemy gender=" + gender); Go(6); break;
                 case 6:
                     Game.monstruo.GetComponent<Rigidbody2D>().position = Game.transform.position + new Vector3(1.3f, 0f, 0f);
-                    Check(Game.TryAttack() && Game.EnemyHealth == 1, "Second hit damages enemy gender=" + gender); Go(7); break;
+                    Check(Game.TryAttack() && Game.EnemyHealth == 0, "Second hit defeats enemy gender=" + gender); Go(8); break;
                 case 7:
                     Game.monstruo.GetComponent<Rigidbody2D>().position = Game.transform.position + new Vector3(1.3f, 0f, 0f);
                     Check(Game.TryAttack(), "Third hit gender=" + gender); Go(8); break;
@@ -117,7 +117,7 @@ public static class PlayableValidation
                 case 11:
                     Check(GameSession.Instance.Health < 100f && GameSession.Instance.Health > 0f, "Contact deals gradual damage gender=" + gender); Go(12); break;
                 case 12:
-                    if (!Game.Termino && Time.time - deathStart < 8f)
+                    if (!Game.Termino && Time.time - deathStart < 20f)
                     { Game.GetComponent<Rigidbody2D>().position = Game.monstruo.position; Go(12); break; }
                     Check(Game.Termino && !Game.Ganaste && GameSession.Instance.Health == 0f, "Player death and Game Over gender=" + gender);
                     Button("Reintentar").onClick.Invoke();
@@ -151,4 +151,3 @@ public static class PlayableValidation
         Check(sprite != null && (PlayerWalkAnimator.Selected == 1 ? path.Contains("Personaje2") : !path.Contains("Personaje2")), "Correct visual " + PlayerWalkAnimator.Selected + ": " + path);
     }
 }
-

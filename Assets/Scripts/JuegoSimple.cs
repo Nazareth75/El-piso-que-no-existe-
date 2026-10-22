@@ -17,6 +17,10 @@ public class JuegoSimple : MonoBehaviour
     bool gameOver;
     bool ganaste;
     bool preparado;
+    Collider2D playerHitbox, enemyHitbox;
+    float stunnedUntil;
+    const float AttackReach = 2.5f;
+    const int AttackDamage = 2;
     Piso7.Player.PlayerController2D campusPlayer;
     int enemyHealth = 3;
     float nextAttack, nextDamage, hitFlashUntil;
@@ -51,6 +55,8 @@ public class JuegoSimple : MonoBehaviour
             enabled = false;
             return;
         }
+        playerHitbox = GetComponent<Collider2D>();
+        enemyHitbox = monstruo.GetComponent<Collider2D>();
         preparado = true;
         dibujoMonstruo = monstruo.GetComponent<SpriteRenderer>();
         animacionMonstruo = monstruo.GetComponent<Animator>();
@@ -79,6 +85,11 @@ public class JuegoSimple : MonoBehaviour
         }
         cuerpoPlayer.linearVelocity = new Vector2(direccion * velocidadPlayer, cuerpoPlayer.linearVelocity.y);
 
+        }
+        if (CampusCombat && Time.time < stunnedUntil)
+        {
+            cuerpoMonstruo.linearVelocity = new Vector2(0f, cuerpoMonstruo.linearVelocity.y);
+            return;
         }
         float diferencia = transform.position.x - monstruo.position.x;
         float paso = Mathf.Clamp(diferencia / Time.fixedDeltaTime, -velocidadMonstruo, velocidadMonstruo);
@@ -124,12 +135,14 @@ public class JuegoSimple : MonoBehaviour
             if (attackVisualUntil <= 0f) visualScale = visual.localScale;
             visual.localScale = visualScale * 1.1f; attackVisualUntil = Time.time + 0.13f;
         }
-        Vector2 offset = monstruo.position - transform.position;
-        float facing = campusPlayer.FacingRight ? 1f : -1f;
-        if (offset.magnitude > 2.1f || offset.x * facing < -0.25f) return false;
-        var enemyCollider = monstruo.GetComponent<Collider2D>();
-        if (enemyCollider == null || !enemyCollider.enabled || !cuerpoMonstruo.simulated) return false;
-        enemyHealth = Mathf.Max(0, enemyHealth - 1);
+        if (playerHitbox == null || enemyHitbox == null || !enemyHitbox.enabled || !cuerpoMonstruo.simulated) return false;
+        // Measure the space between actual hitboxes, never scaled transform centers.
+        var separation = Physics2D.Distance(playerHitbox, enemyHitbox);
+        if (!separation.isValid || (!separation.isOverlapped && separation.distance > AttackReach)) return false;
+        enemyHealth = Mathf.Max(0, enemyHealth - AttackDamage);
+        stunnedUntil = Time.time + 1.2f;
+        nextDamage = Mathf.Max(nextDamage, stunnedUntil);
+        cuerpoMonstruo.linearVelocity = new Vector2(0f, cuerpoMonstruo.linearVelocity.y);
         hitFlashUntil = Time.time + 0.18f;
         if (dibujoMonstruo != null) dibujoMonstruo.color = Color.red;
         if (enemyHealth == 0) Ganar();
@@ -145,9 +158,12 @@ public class JuegoSimple : MonoBehaviour
     {
         if (!CampusCombat) { Perder(); return; }
         if (!preparado || gameOver || EncounterCleared || Piso7.Core.GameMenu.BloqueaJuego || Time.time < nextDamage) return;
-        nextDamage = Time.time + 1f;
+        if (Time.time < stunnedUntil || playerHitbox == null || enemyHitbox == null) return;
+        var contact = Physics2D.Distance(playerHitbox, enemyHitbox);
+        if (!contact.isValid || (!contact.isOverlapped && contact.distance > 0.03f)) return;
+        nextDamage = Time.time + 1.5f;
         var session = Piso7.Core.GameSession.Ensure();
-        session.ApplyDamage(25f);
+        session.ApplyDamage(10f);
         if (session.Health <= 0f) Perder();
     }
 
@@ -201,7 +217,7 @@ public class JuegoSimple : MonoBehaviour
     {
         if (!preparado) return;
         if (CampusCombat) Piso7.Core.GameSession.Ensure().ResetRun();
-        enemyHealth = 3; nextAttack = nextDamage = 0f; EncounterCleared = false;
+        enemyHealth = 3; nextAttack = nextDamage = stunnedUntil = 0f; EncounterCleared = false;
         monstruo.gameObject.SetActive(true);
         transform.position = inicioPlayer;
         monstruo.position = inicioMonstruo;
@@ -225,7 +241,7 @@ public class JuegoSimple : MonoBehaviour
             var hudSprite = Resources.Load<Sprite>("Menu/panel");
             if (hudSprite != null) GUI.DrawTexture(area, hudSprite.texture);
             var style = new GUIStyle(GUI.skin.label) { fontSize = Mathf.Clamp(Screen.width / 65, 12, 20), alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(0.12f, 0.18f, 0.28f) } };
-            GUI.Label(area, "Vida: " + Piso7.Core.GameSession.Ensure().Health + "   Enemigo: " + enemyHealth + "/3\n" + (Application.isMobilePlatform ? "Botón ATACAR: tres golpes" : "F / clic derecho: atacar"), style);
+            GUI.Label(area, "Vida: " + Piso7.Core.GameSession.Ensure().Health + "   Enemigo: " + enemyHealth + "/3\n" + (Application.isMobilePlatform ? "Botón ATACAR: dos golpes" : "F / clic derecho: dos golpes"), style);
         }
         if (!gameOver || CampusCombat) return;
         GUI.depth = -100;

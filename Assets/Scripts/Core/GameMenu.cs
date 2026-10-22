@@ -222,8 +222,8 @@ namespace Piso7.Core
         {
             var text = Label(parent, font,
                 Application.isMobilePlatform
-                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar    ATACAR: golpear (tres golpes)\nUSAR: interactuar con puertas y ascensor\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
-                    : "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; tres golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
+                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar    ATACAR: golpear (dos golpes)\nUSAR: interactuar con puertas y ascensor\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
+                    : "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; dos golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
                 26, new Vector2(0f, 20f));
             text.alignment = TextAnchor.MiddleCenter;
             text.rectTransform.sizeDelta = new Vector2(760f, 280f);

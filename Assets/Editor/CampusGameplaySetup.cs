@@ -13,7 +13,7 @@ public static class CampusGameplaySetup
     static void Poll()
     {
         if (!File.Exists("Temp/campus-setup.request") || EditorApplication.isCompiling || EditorApplication.isUpdating || EditorApplication.isPlaying) return;
-        File.Delete("Temp/campus-setup.request"); Configure();
+        try { File.Delete("Temp/campus-setup.request"); } catch (IOException) { return; } Configure();
     }
     [MenuItem("Tools/Equipo/Conectar encuentro Campus")]
     public static void Configure()

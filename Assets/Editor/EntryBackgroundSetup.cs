@@ -13,7 +13,7 @@ public static class EntryBackgroundSetup
     {
         if (File.Exists("Temp/entry-background-view.request") && !EditorApplication.isPlaying && !EditorApplication.isCompiling && !EditorApplication.isUpdating)
         {
-            File.Delete("Temp/entry-background-view.request");
+            try { File.Delete("Temp/entry-background-view.request"); } catch (IOException) { return; }
             if (SceneManager.GetActiveScene().isDirty) return;
             EditorSceneManager.OpenScene("Assets/Scenes/Campus/Campus_EntradaPrincipal.unity");
             var view = EditorWindow.GetWindow<SceneView>(); view.in2DMode = true;
@@ -21,7 +21,7 @@ public static class EntryBackgroundSetup
             return;
         }
         if (!File.Exists("Temp/entry-background.request") || EditorApplication.isPlaying || EditorApplication.isCompiling || EditorApplication.isUpdating) return;
-        File.Delete("Temp/entry-background.request"); Apply();
+        try { File.Delete("Temp/entry-background.request"); } catch (IOException) { return; } Apply();
     }
     [MenuItem("Tools/Equipo/Aplicar fondo de entrada")]
     public static void Apply()
