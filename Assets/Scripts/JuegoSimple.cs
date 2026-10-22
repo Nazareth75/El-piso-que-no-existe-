@@ -17,12 +17,27 @@ public class JuegoSimple : MonoBehaviour
     bool gameOver;
     bool ganaste;
     bool preparado;
+    Piso7.Player.PlayerController2D campusPlayer;
+    int enemyHealth = 3;
+    float nextAttack, nextDamage, hitFlashUntil;
+    Color enemyColor;
+    Vector3 visualScale;
+    Transform visual;
+    float attackVisualUntil;
+    public int EnemyHealth => enemyHealth;
+    public bool CampusCombat => campusPlayer != null;
+    public bool EncounterCleared { get; private set; }
+    public bool BlocksTraversal => CampusCombat && !EncounterCleared;
+
     public bool Ganaste => ganaste;
     public bool Termino => gameOver;
 
     void Awake()
     {
         cuerpoPlayer = GetComponent<Rigidbody2D>();
+        campusPlayer = GetComponent<Piso7.Player.PlayerController2D>();
+        visual = transform.Find("Visual");
+        if (campusPlayer != null) Piso7.Core.GameSession.Ensure();
         if (monstruo == null || cuerpoPlayer == null)
         {
             Debug.LogError("JuegoSimple: falta el monstruo o el Rigidbody2D del Player.", this);
@@ -39,6 +54,7 @@ public class JuegoSimple : MonoBehaviour
         preparado = true;
         dibujoMonstruo = monstruo.GetComponent<SpriteRenderer>();
         animacionMonstruo = monstruo.GetComponent<Animator>();
+        if (dibujoMonstruo != null) enemyColor = dibujoMonstruo.color;
         inicioPlayer = transform.position;
         inicioMonstruo = monstruo.position;
         foreach (var objeto in FindObjectsByType<Transform>(FindObjectsSortMode.None))
@@ -52,7 +68,9 @@ public class JuegoSimple : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!preparado || gameOver || Piso7.Core.GameMenu.BloqueaJuego) return;
+        if (!preparado || gameOver || EncounterCleared || Piso7.Core.GameMenu.BloqueaJuego) return;
+        if (!CampusCombat)
+        {
         float direccion = 0;
         if (Keyboard.current != null)
         {
@@ -61,6 +79,7 @@ public class JuegoSimple : MonoBehaviour
         }
         cuerpoPlayer.linearVelocity = new Vector2(direccion * velocidadPlayer, cuerpoPlayer.linearVelocity.y);
 
+        }
         float diferencia = transform.position.x - monstruo.position.x;
         float paso = Mathf.Clamp(diferencia / Time.fixedDeltaTime, -velocidadMonstruo, velocidadMonstruo);
         cuerpoMonstruo.linearVelocity = new Vector2(paso, cuerpoMonstruo.linearVelocity.y);
@@ -70,14 +89,80 @@ public class JuegoSimple : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D choque)
     {
-        if (TocaVictoria(choque.transform)) { Ganar(); return; }
-        if (choque.transform == monstruo) Perder();
+        if (TocaVictoria(choque.transform) && !CampusCombat) { Ganar(); return; }
+        if (choque.transform == monstruo) ContactDamage();
     }
 
     void OnTriggerEnter2D(Collider2D otro)
     {
-        if (TocaVictoria(otro.transform)) { Ganar(); return; }
-        if (otro.transform == monstruo) Perder();
+        if (TocaVictoria(otro.transform) && !CampusCombat) { Ganar(); return; }
+        if (otro.transform == monstruo) ContactDamage();
+    }
+
+    void Update()
+    {
+        if (!CampusCombat || !preparado || gameOver || EncounterCleared || Piso7.Core.GameMenu.BloqueaJuego) return;
+        var keyboard = Keyboard.current;
+        var mouse = Mouse.current;
+        if ((keyboard != null && keyboard.fKey.wasPressedThisFrame) || (mouse != null && mouse.rightButton.wasPressedThisFrame) ||
+            (Gamepad.current != null && Gamepad.current.rightShoulder.wasPressedThisFrame)) TryAttack();
+    }
+
+    void LateUpdate()
+    {
+        if (visual != null && attackVisualUntil > 0f && Time.time >= attackVisualUntil)
+        { visual.localScale = visualScale; attackVisualUntil = 0f; }
+        if (dibujoMonstruo != null && Time.time >= hitFlashUntil) dibujoMonstruo.color = enemyColor;
+    }
+
+    public bool TryAttack()
+    {
+        if (!CampusCombat || !preparado || gameOver || EncounterCleared || Piso7.Core.GameMenu.BloqueaJuego || Time.time < nextAttack) return false;
+        nextAttack = Time.time + 0.4f;
+        if (visual != null)
+        {
+            if (attackVisualUntil <= 0f) visualScale = visual.localScale;
+            visual.localScale = visualScale * 1.1f; attackVisualUntil = Time.time + 0.13f;
+        }
+        Vector2 offset = monstruo.position - transform.position;
+        float facing = campusPlayer.FacingRight ? 1f : -1f;
+        if (offset.magnitude > 2.1f || offset.x * facing < -0.25f) return false;
+        var enemyCollider = monstruo.GetComponent<Collider2D>();
+        if (enemyCollider == null || !enemyCollider.enabled || !cuerpoMonstruo.simulated) return false;
+        enemyHealth = Mathf.Max(0, enemyHealth - 1);
+        hitFlashUntil = Time.time + 0.18f;
+        if (dibujoMonstruo != null) dibujoMonstruo.color = Color.red;
+        if (enemyHealth == 0) Ganar();
+        return true;
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        if (CampusCombat && collision.transform == monstruo) ContactDamage();
+    }
+
+    void ContactDamage()
+    {
+        if (!CampusCombat) { Perder(); return; }
+        if (!preparado || gameOver || EncounterCleared || Piso7.Core.GameMenu.BloqueaJuego || Time.time < nextDamage) return;
+        nextDamage = Time.time + 1f;
+        var session = Piso7.Core.GameSession.Ensure();
+        session.ApplyDamage(25f);
+        if (session.Health <= 0f) Perder();
+    }
+
+    public void ContinueTour()
+    {
+        if (!ganaste) return;
+        EncounterCleared = true; gameOver = false;
+        cuerpoPlayer.simulated = true;
+        monstruo.gameObject.SetActive(false);
+        Piso7.Core.GameSession.Ensure().SetObjective("Continúa hacia la recepción.");
+    }
+
+    void OnDisable()
+    {
+        if (visual != null && attackVisualUntil > 0f) visual.localScale = visualScale;
     }
 
     static bool EsActivadorVictoria(string nombre)
@@ -108,11 +193,16 @@ public class JuegoSimple : MonoBehaviour
         cuerpoPlayer.simulated = false;
         cuerpoMonstruo.simulated = false;
         if (animacionMonstruo != null) animacionMonstruo.enabled = false;
+        if (CampusCombat && Piso7.Core.GameMenu.Instance != null)
+            Piso7.Core.GameMenu.Instance.ShowCombatResult(ganaste, Reiniciar, ContinueTour);
     }
 
     public void Reiniciar()
     {
         if (!preparado) return;
+        if (CampusCombat) Piso7.Core.GameSession.Ensure().ResetRun();
+        enemyHealth = 3; nextAttack = nextDamage = 0f; EncounterCleared = false;
+        monstruo.gameObject.SetActive(true);
         transform.position = inicioPlayer;
         monstruo.position = inicioMonstruo;
         cuerpoPlayer.position = inicioPlayer;
@@ -128,7 +218,16 @@ public class JuegoSimple : MonoBehaviour
 
     void OnGUI()
     {
-        if (!gameOver) return;
+        if (CampusCombat && !gameOver && !EncounterCleared && !Piso7.Core.GameMenu.BloqueaJuego)
+        {
+            float hudWidth = Mathf.Min(430f, Screen.width * 0.45f);
+            var area = new Rect(Screen.width - hudWidth - 15f, 15f, hudWidth, 70f);
+            var hudSprite = Resources.Load<Sprite>("Menu/panel");
+            if (hudSprite != null) GUI.DrawTexture(area, hudSprite.texture);
+            var style = new GUIStyle(GUI.skin.label) { fontSize = Mathf.Clamp(Screen.width / 65, 12, 20), alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(0.12f, 0.18f, 0.28f) } };
+            GUI.Label(area, "Vida: " + Piso7.Core.GameSession.Ensure().Health + "   Enemigo: " + enemyHealth + "/3\nF / clic derecho: atacar", style);
+        }
+        if (!gameOver || CampusCombat) return;
         GUI.depth = -100;
         GUI.Box(new Rect(0, 0, Screen.width, Screen.height), "");
         Rect panel = new Rect((Screen.width - 340) / 2f, (Screen.height - 180) / 2f, 340, 180);
@@ -140,3 +239,6 @@ public class JuegoSimple : MonoBehaviour
         if (GUI.Button(new Rect(panel.x + 80, panel.y + 115, 180, 40), "Reintentar")) Reiniciar();
     }
 }
+
+
+

@@ -24,6 +24,7 @@ namespace Piso7.Interaction
 
         void Update()
         {
+            if (Piso7.Core.GameMenu.BloqueaJuego) { _current = null; return; }
             _current = FindClosest();
 
             bool pressed = false;

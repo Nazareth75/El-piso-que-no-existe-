@@ -40,7 +40,8 @@ namespace Piso7.Campus
 
         public void Activar()
         {
-            if (!CanInteract)
+            var combat = FindFirstObjectByType<JuegoSimple>();
+            if (!CanInteract || Core.GameMenu.BloqueaJuego || (combat != null && combat.BlocksTraversal))
                 return;
 
             CampusTransition.Load(targetScene);

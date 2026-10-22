@@ -27,6 +27,8 @@ namespace Piso7.Core
         Text _bannerText;
         bool _built;
         bool _silenced;
+        bool _startAfterChoice;
+        GameObject _outcome;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void ResetClock()
@@ -77,6 +79,7 @@ namespace Piso7.Core
 
         void ApplyScene(string sceneName)
         {
+            if (_outcome != null) { Destroy(_outcome); _outcome = null; }
             bool menu = sceneName == MenuScene;
             _silenced = false;
             if (menu)
@@ -102,6 +105,7 @@ namespace Piso7.Core
 
         void Update()
         {
+            if (_outcome != null) return;
             var keyboard = Keyboard.current;
             if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame)
                 return;
@@ -185,7 +189,7 @@ namespace Piso7.Core
             OptionsBody(optionsBody, font);
             _help = Panel(font, "Cómo jugar", out var helpBody);
             HelpBody(helpBody, font);
-            _characters = Panel(font, "Personaje", out var characterBody);
+            _characters = Panel(font, "Escoger personaje", out var characterBody);
             CharacterBody(characterBody, font);
 
             jugar.name = "BotonJugar";
@@ -217,7 +221,7 @@ namespace Piso7.Core
         void HelpBody(Transform parent, Font font)
         {
             var text = Label(parent, font,
-                "A y D caminan\nShift corre    Espacio salta\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
+                "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; tres golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
                 26, new Vector2(0f, 20f));
             text.alignment = TextAnchor.MiddleCenter;
             text.rectTransform.sizeDelta = new Vector2(760f, 280f);
@@ -236,8 +240,8 @@ namespace Piso7.Core
 
             if (SceneManager.GetActiveScene().name == MenuScene)
             {
-                Show(false);
-                SceneManager.LoadScene(FirstScene);
+                _startAfterChoice = true;
+                OnCharacters();
                 return;
             }
 
@@ -352,6 +356,7 @@ namespace Piso7.Core
 
         void ClosePanels()
         {
+            _startAfterChoice = false;
             if (_options != null)
                 _options.SetActive(false);
             if (_help != null)
@@ -364,8 +369,8 @@ namespace Piso7.Core
         {
             Label(parent, font, "Elige quien camina por el campus", 24, new Vector2(0f, 170f));
             _portraitFrames = new Image[2];
-            Portrait(parent, font, 0, "Personaje 1", new Vector2(-190f, 0f), Sprite("Player/Personaje1/retrato"));
-            Portrait(parent, font, 1, "Personaje 2", new Vector2(190f, 0f), Sprite("Player/Personaje2/frame_00"));
+            Portrait(parent, font, 0, "MUJER", new Vector2(-190f, 0f), Sprite("Player/Personaje1/retrato"));
+            Portrait(parent, font, 1, "HOMBRE", new Vector2(190f, 0f), Sprite("Player/Personaje2/frame_00"));
             TextButton(parent, font, "Volver", new Vector2(0f, -200f), ClosePanels);
             RefreshPortraits();
         }
@@ -389,6 +394,14 @@ namespace Piso7.Core
                 MenuAudio.Click();
                 Player.PlayerWalkAnimator.Select(captured);
                 RefreshPortraits();
+                if (_startAfterChoice)
+                {
+                    _startAfterChoice = false;
+                    ClosePanels();
+                    Show(false);
+                    GameSession.Ensure().ResetRun();
+                    SceneManager.LoadScene(FirstScene);
+                }
             });
             _portraitFrames[index] = frame;
 
@@ -421,6 +434,26 @@ namespace Piso7.Core
                     ? new Color(0.85f, 0.62f, 0.22f, 1f)
                     : new Color(0.12f, 0.18f, 0.3f, 1f);
             }
+        }
+
+        public void ShowCombatResult(bool victory, System.Action retry, System.Action continueTour)
+        {
+            ClosePanels();
+            if (_outcome != null) Destroy(_outcome);
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            _outcome = Panel(font, victory ? "Victoria" : "Game Over", out var body);
+            var text = Label(body, font, victory ? "El enemigo ha sido derrotado. Puedes continuar el recorrido." : "El enemigo te ha atrapado. Inténtalo de nuevo.", 26, new Vector2(0f, 70f));
+            text.rectTransform.sizeDelta = new Vector2(700f, 110f);
+            TextButton(body, font, victory ? "Continuar" : "Reintentar", new Vector2(0f, -70f), () =>
+            {
+                Destroy(_outcome); _outcome = null; Show(false);
+                if (victory) continueTour(); else retry();
+            });
+            TextButton(body, font, "Menú principal", new Vector2(0f, -180f), () =>
+            {
+                Destroy(_outcome); _outcome = null; OnHome();
+            });
+            Show(true); _outcome.SetActive(true); _outcome.transform.SetAsLastSibling();
         }
 
         void Show(bool visible)
@@ -617,3 +650,7 @@ namespace Piso7.Core
         }
     }
 }
+
+
+
+

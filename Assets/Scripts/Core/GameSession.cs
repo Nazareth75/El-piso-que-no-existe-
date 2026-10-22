@@ -35,6 +35,19 @@ namespace Piso7.Core
             Stamina = maxStamina;
         }
 
+        public static GameSession Ensure()
+        {
+            if (Instance == null) new GameObject("GameSession").AddComponent<GameSession>();
+            return Instance;
+        }
+
+        public void ResetRun()
+        {
+            Health = maxHealth; Stamina = maxStamina;
+            SetObjective("Derrota al enemigo de la entrada. F o clic derecho para atacar.");
+            VitalsChanged?.Invoke(Health, Stamina);
+        }
+
         public void SetObjective(string objective)
         {
             currentObjective = objective;

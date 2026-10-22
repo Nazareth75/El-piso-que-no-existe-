@@ -69,6 +69,7 @@ namespace Piso7.Player
 
         void FixedUpdate()
         {
+            if (!_rb.simulated) return;
             float targetSpeed = IsRunning ? runSpeed : walkSpeed;
             _rb.linearVelocity = new Vector2(_moveInput * targetSpeed, _rb.linearVelocity.y);
         }
