@@ -59,6 +59,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/Scenes/Level1_Entrada.unity
+    guid: e754687654da78d42a60e36e94e27a39
+  - enabled: 1
+    path: Assets/Scenes/Dilan_Prototipo.unity
+    guid: ba884432aa5c416e9951f0fdcbd78050
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

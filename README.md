@@ -110,3 +110,9 @@ Los cambios se integran mediante merge o Pull Request, revisando los conflictos 
 ## Estado del proyecto
 
 Prototipo en desarrollo. Las próximas mejoras pueden incluir nuevos niveles, puzzles, sigilo, entidades y guardado de partidas.
+## Integración del equipo en feature/nazaret
+
+El recorrido comienza en `Assets/Scenes/MainMenu.unity` y continúa en `Campus_EntradaPrincipal`.
+El prototipo de persecución de Dilan se conserva en `Assets/Scenes/Dilan_Prototipo.unity`, con Game Over, Victoria y Reintentar. Véase `README_Dilan.md`.
+`Level1_Entrada` también está incluida en la lista de escenas de compilación.
+Para repetir las pruebas básicas en Unity, guarda la escena y selecciona **Tools > Equipo > Validar integracion**. La herramienta entra y sale de Play, recorre las escenas y escribe el informe en `Library/TeamValidation/report.txt`; al finalizar restaura la escena anterior. Ejecuta las pruebas sin interactuar con el teclado hasta que finalicen.

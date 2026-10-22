@@ -112,3 +112,13 @@ InitTestScene*.unity*
 /PongAula/
 
 **/Library/
+
+# Reglas adicionales del prototipo de Dilan
+# Unity: archivos generados localmente
+/.plastic/
+/.vs/
+/.vscode/
+.DS_Store
+Thumbs.db
+.env
+.env.*
