@@ -13,6 +13,8 @@ namespace Piso7.Campus
         [SerializeField] float y = CampusMetrics.CameraY;
         [SerializeField] float panSpeed = 7f;
 
+        [SerializeField] float cameraSize = CampusMetrics.CameraSize;
+        [SerializeField] float worldWidth = CampusMetrics.WorldWidth;
         Camera _camera;
         float _minX = 4.8f;
         float _maxX = 13.2f;
@@ -32,7 +34,7 @@ namespace Piso7.Campus
             if (_camera != null)
             {
                 _camera.orthographic = true;
-                _camera.orthographicSize = CampusMetrics.CameraSize;
+                _camera.orthographicSize = cameraSize;
             }
         }
 
@@ -46,10 +48,10 @@ namespace Piso7.Campus
             if (_camera == null)
                 _camera = GetComponent<Camera>();
 
-            float half = VisibleHalfWidth();
+            float half = Mathf.Min(VisibleHalfWidth(), worldWidth * 0.5f);
             _minX = half;
-            _maxX = Mathf.Max(half, CampusMetrics.WorldWidth - half);
-            y = CampusMetrics.CameraY;
+            _maxX = Mathf.Max(half, worldWidth - half);
+
             var p = transform.position;
             p.x = Mathf.Clamp(startX, _minX, _maxX);
             p.y = y;
@@ -97,7 +99,7 @@ namespace Piso7.Campus
         {
             var cam = _camera != null ? _camera : Camera.main;
             float aspect = cam != null ? cam.aspect : 16f / 9f;
-            return CampusMetrics.CameraSize * aspect;
+            return cameraSize * aspect;
         }
 
         static float ReadAxis()
@@ -160,3 +162,4 @@ namespace Piso7.Campus
         }
     }
 }
+
