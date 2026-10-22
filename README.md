@@ -115,4 +115,15 @@ Prototipo en desarrollo. Las próximas mejoras pueden incluir nuevos niveles, pu
 El recorrido comienza en `Assets/Scenes/MainMenu.unity` y continúa en `Campus_EntradaPrincipal`.
 El prototipo de persecución de Dilan se conserva en `Assets/Scenes/Dilan_Prototipo.unity`, con Game Over, Victoria y Reintentar. Véase `README_Dilan.md`.
 `Level1_Entrada` también está incluida en la lista de escenas de compilación.
-Para repetir las pruebas básicas en Unity, guarda la escena y selecciona **Tools > Equipo > Validar integracion**. La herramienta entra y sale de Play, recorre las escenas y escribe el informe en `Library/TeamValidation/report.txt`; al finalizar restaura la escena anterior. Ejecuta las pruebas sin interactuar con el teclado hasta que finalicen.
+Para repetir las pruebas básicas en Unity, guarda la escena y selecciona **Tools > Equipo > Validar integracion**. La herramienta entra y sale de Play, recorre las escenas y escribe el informe en `Library/PlayableValidation/report.txt`; al finalizar restaura la escena anterior. Ejecuta las pruebas sin interactuar con el teclado hasta que finalicen.
+
+## Flujo jugable: selección y encuentro de entrada
+
+Abre `Assets/Scenes/MainMenu.unity` y pulsa Play. **Jugar** abre el panel existente **Escoger personaje**; **HOMBRE** usa Personaje2 y **MUJER** usa Personaje1. La elección se conserva mediante el sistema existente de PlayerPrefs y se aplica al cambiar de escena.
+
+En `Campus_EntradaPrincipal`, A/D o flechas mueven, Shift corre, Espacio salta y **F / clic derecho / RB** ataca. El enemigo reutiliza el sprite y la animación de Dilan. Tiene tres puntos de vida; los ataques requieren cercanía y estar mirando hacia él. Cada contacto puede quitar 25 de vida, con un segundo entre daños. Al llegar a cero aparece Game Over; **Reintentar** restaura jugador, enemigo y vida. Al derrotarlo aparece Victoria; **Continuar** habilita el paso a recepción. El recorrido permanece bloqueado durante el encuentro.
+
+`JuegoSimple` detecta `PlayerController2D` y delega en él todo el movimiento del Campus. En el prototipo histórico mantiene su movimiento y victoria por activador. No se carga el prototipo para jugar el encuentro del Campus.
+
+**Tools > Equipo > Probar flujo jugable** ejecuta la regresión para ambos personajes y las transiciones. Durante la prueba no uses el teclado; se inyectan entradas y se recolocan actores únicamente en memoria para comprobar daños y resultados. El informe queda en `Library/PlayableValidation/report.txt`. Al terminar sale de Play y abre MainMenu. La escena ya tiene al enemigo y las referencias guardadas; no necesitas ejecutar ninguna herramienta de configuración para jugar.
+
