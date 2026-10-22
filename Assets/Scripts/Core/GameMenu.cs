@@ -107,7 +107,7 @@ namespace Piso7.Core
         {
             if (_outcome != null) return;
             var keyboard = Keyboard.current;
-            if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame)
+            if (!MobileControls.Pause && (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame))
                 return;
 
             if (_options != null && _options.activeSelf || _help != null && _help.activeSelf || _characters != null && _characters.activeSelf)
@@ -221,7 +221,9 @@ namespace Piso7.Core
         void HelpBody(Transform parent, Font font)
         {
             var text = Label(parent, font,
-                "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; tres golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
+                Application.isMobilePlatform
+                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar    ATACAR: golpear (tres golpes)\nUSAR: interactuar con puertas y ascensor\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
+                    : "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; tres golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
                 26, new Vector2(0f, 20f));
             text.alignment = TextAnchor.MiddleCenter;
             text.rectTransform.sizeDelta = new Vector2(760f, 280f);

@@ -27,6 +27,12 @@ namespace Piso7.Campus
                     ? "Camina hacia la izquierda. Detente en INGRESAR para entrar a la clínica. E también permite entrar. Esc menú"
                     : "Detente en INGRESAR o SALIR para cambiar de lugar. E también permite interactuar. Esc menú";
 
+            if (hint != null && Application.isMobilePlatform)
+            {
+                hint.text = "IZQ / DER: caminar · USAR: interactuar · PAUSA: menú";
+                hint.rectTransform.anchoredPosition += new Vector2(0f, 25f);
+            }
+
             if (labelRoot == null || font == null)
                 return;
 

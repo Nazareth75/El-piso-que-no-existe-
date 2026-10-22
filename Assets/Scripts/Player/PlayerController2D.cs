@@ -113,6 +113,9 @@ namespace Piso7.Player
                     _jumpPressed = true;
             }
 
+            if (Mathf.Abs(Core.MobileControls.Move) > 0f) _moveInput = Core.MobileControls.Move;
+            _runHeld |= Core.MobileControls.Run;
+            _jumpPressed |= Core.MobileControls.Jump;
             _moveInput = Mathf.Clamp(_moveInput, -1f, 1f);
 
             if (_jumpPressed)

@@ -27,7 +27,7 @@ namespace Piso7.Interaction
             if (Piso7.Core.GameMenu.BloqueaJuego) { _current = null; return; }
             _current = FindClosest();
 
-            bool pressed = false;
+            bool pressed = Piso7.Core.MobileControls.Interact;
             if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
                 pressed = true;
             if (Gamepad.current != null && Gamepad.current.buttonWest.wasPressedThisFrame)

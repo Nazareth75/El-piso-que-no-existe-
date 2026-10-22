@@ -104,10 +104,10 @@ namespace Piso7.Campus
 
         static float ReadAxis()
         {
-            float axis = 0f;
+            float axis = Piso7.Core.MobileControls.Move;
             var keyboard = Keyboard.current;
             if (keyboard == null)
-                return 0f;
+                return axis;
 
             if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed)
                 axis -= 1f;

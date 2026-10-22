@@ -71,7 +71,7 @@ public class JuegoSimple : MonoBehaviour
         if (!preparado || gameOver || EncounterCleared || Piso7.Core.GameMenu.BloqueaJuego) return;
         if (!CampusCombat)
         {
-        float direccion = 0;
+        float direccion = Piso7.Core.MobileControls.Move;
         if (Keyboard.current != null)
         {
             if (Keyboard.current.aKey.isPressed) direccion -= 1;
@@ -105,7 +105,7 @@ public class JuegoSimple : MonoBehaviour
         var keyboard = Keyboard.current;
         var mouse = Mouse.current;
         if ((keyboard != null && keyboard.fKey.wasPressedThisFrame) || (mouse != null && mouse.rightButton.wasPressedThisFrame) ||
-            (Gamepad.current != null && Gamepad.current.rightShoulder.wasPressedThisFrame)) TryAttack();
+            (Gamepad.current != null && Gamepad.current.rightShoulder.wasPressedThisFrame) || Piso7.Core.MobileControls.Attack) TryAttack();
     }
 
     void LateUpdate()
@@ -225,7 +225,7 @@ public class JuegoSimple : MonoBehaviour
             var hudSprite = Resources.Load<Sprite>("Menu/panel");
             if (hudSprite != null) GUI.DrawTexture(area, hudSprite.texture);
             var style = new GUIStyle(GUI.skin.label) { fontSize = Mathf.Clamp(Screen.width / 65, 12, 20), alignment = TextAnchor.MiddleCenter, normal = { textColor = new Color(0.12f, 0.18f, 0.28f) } };
-            GUI.Label(area, "Vida: " + Piso7.Core.GameSession.Ensure().Health + "   Enemigo: " + enemyHealth + "/3\nF / clic derecho: atacar", style);
+            GUI.Label(area, "Vida: " + Piso7.Core.GameSession.Ensure().Health + "   Enemigo: " + enemyHealth + "/3\n" + (Application.isMobilePlatform ? "Botón ATACAR: tres golpes" : "F / clic derecho: atacar"), style);
         }
         if (!gameOver || CampusCombat) return;
         GUI.depth = -100;
