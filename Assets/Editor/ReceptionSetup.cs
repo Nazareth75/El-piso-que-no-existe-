@@ -20,10 +20,10 @@ public static class ReceptionSetup
     {
         if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
         if (File.Exists("Temp/reception-setup.request") && !EditorApplication.isPlaying)
-        { File.Delete("Temp/reception-setup.request"); Apply(); return; }
+        { try { File.Delete("Temp/reception-setup.request"); } catch (IOException) { return; } Apply(); return; }
         if (File.Exists("Temp/reception-test.request") && !EditorApplication.isPlaying)
         {
-            File.Delete("Temp/reception-test.request");
+            try { File.Delete("Temp/reception-test.request"); } catch (IOException) { return; }
             if (SceneManager.GetActiveScene().isDirty) return;
             File.WriteAllText(Report,"Unity "+Application.unityVersion+"\n");
             EditorSceneManager.OpenScene("Assets/Scenes/Campus/Campus_Recepcion.unity");
@@ -46,6 +46,10 @@ public static class ReceptionSetup
             {
                 case 1:
                     Check(player!=null && player.GetComponent<Piso7.Player.PlayerController2D>()!=null,"Player conserva controlador");
+                    Check(player.transform.position.x>11f && !player.GetComponent<Piso7.Player.PlayerController2D>().FacingRight,"Aparece en recepcion mirando izquierda");
+                    Check(GameObject.Find("Ascensor")==null,"Sin ascensor activo en recepcion");
+                    Check(UnityEngine.Object.FindObjectsByType<CampusHotspot>(FindObjectsSortMode.None).Length==1,"Solo el acceso a clinica esta activo");
+                    Check(GameObject.Find("Punto_Clinica").transform.Find("BotonAcceso").GetComponent<SpriteRenderer>().sprite.name=="Ingresar","Boton verde de ingreso asignado");
                     Check(GameObject.Find("Punto_Clinica").GetComponent<CampusHotspot>().TargetScene=="Campus_Clinica","Flecha apunta a clinica");
                     Check(Application.CanStreamedLevelBeLoaded("Campus_Clinica"),"Clinica incluida en Build Settings");
                     Check(GameObject.Find("Fondo").GetComponent<SpriteRenderer>().sprite.name=="recepcion_referencia","Fondo nuevo asignado");
@@ -62,6 +66,7 @@ public static class ReceptionSetup
                     Check(SceneManager.GetActiveScene().name=="Campus_Clinica","Acercarse y detenerse activa recepcion -> clinica");
                     var back=GameObject.Find("Punto_Recepcion");
                     Check(back!=null,"Clinica conserva salida hacia recepcion");
+                    Check(back.transform.Find("BotonAcceso").GetComponent<SpriteRenderer>().sprite.name=="Salir","Boton rojo de salida asignado");
                     if(back==null) { SessionState.SetInt("ReceptionTest",99); EditorApplication.isPlaying=false; break; }
                     approachStarted=Time.time;
                     player.GetComponent<Rigidbody2D>().position=back.transform.position;
@@ -69,7 +74,7 @@ public static class ReceptionSetup
                 case 4:
                     if(SceneManager.GetActiveScene().name!="Campus_Recepcion" && Time.time-approachStarted<4f) return;
                     Check(SceneManager.GetActiveScene().name=="Campus_Recepcion","Regreso clinica -> recepcion por proximidad");
-                    foreach(var name in new[]{"Punto_Entrada","Punto_Hall","Punto_Escaleras","Ascensor"}) Check(GameObject.Find(name)!=null,"Conexion conservada "+name);
+                    foreach(var name in new[]{"Punto_Entrada","Punto_Hall","Punto_Escaleras","Ascensor"}) Check(SceneManager.GetActiveScene().GetRootGameObjects().Any(x=>x.name==name && !x.activeSelf),"Acceso anterior desactivado "+name);
                     SessionState.SetInt("ReceptionTest",99); EditorApplication.isPlaying=false; break;
             }
         }
@@ -123,5 +128,7 @@ public static class ReceptionSetup
         File.WriteAllText("Library/reception-setup.txt","OK fondo y conexion clinica ida/vuelta.");
     }
 }
+
+
 
 

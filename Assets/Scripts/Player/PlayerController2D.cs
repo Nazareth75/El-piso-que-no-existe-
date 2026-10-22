@@ -27,6 +27,7 @@ namespace Piso7.Player
         [SerializeField] float runStaminaCostPerSecond = 12f;
         [SerializeField] float staminaRecoverPerSecond = 8f;
 
+        [SerializeField] bool faceLeftOnStart;
         Rigidbody2D _rb;
         SpriteRenderer _sprite;
         float _moveInput;
@@ -45,6 +46,8 @@ namespace Piso7.Player
         {
             _rb = GetComponent<Rigidbody2D>();
             _sprite = GetComponentInChildren<SpriteRenderer>();
+            _facingRight = !faceLeftOnStart;
+            if (_sprite != null) _sprite.flipX = faceLeftOnStart;
             _rb.freezeRotation = true;
             _rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -180,3 +183,4 @@ namespace Piso7.Player
         }
     }
 }
+

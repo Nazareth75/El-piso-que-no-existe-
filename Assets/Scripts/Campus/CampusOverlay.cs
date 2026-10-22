@@ -23,7 +23,9 @@ namespace Piso7.Campus
                 title.text = $"{info.Piso}  ·  {info.Nombre}";
 
             if (hint != null)
-                hint.text = "Detente sobre la flecha que quieras. Si caminas, pasas de largo     Esc menú";
+                hint.text = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Campus_Recepcion"
+                    ? "Camina hacia la izquierda. Detente en INGRESAR para entrar a la clínica. E también permite entrar. Esc menú"
+                    : "Detente en INGRESAR o SALIR para cambiar de lugar. E también permite interactuar. Esc menú";
 
             if (labelRoot == null || font == null)
                 return;
@@ -121,3 +123,4 @@ namespace Piso7.Campus
         }
     }
 }
+
