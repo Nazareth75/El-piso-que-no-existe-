@@ -28,6 +28,7 @@ namespace Piso7.Core
         bool _built;
         bool _silenced;
         bool _startAfterChoice;
+        bool _enterCampus;
         GameObject _outcome;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -59,6 +60,7 @@ namespace Piso7.Core
             MenuAudio.Ensure();
             Build();
             SceneManager.sceneLoaded += OnSceneLoaded;
+            HideFondoMenu();
         }
 
         void Start()
@@ -79,6 +81,7 @@ namespace Piso7.Core
 
         void ApplyScene(string sceneName)
         {
+            HideFondoMenu();
             if (_outcome != null) { Destroy(_outcome); _outcome = null; }
             bool menu = sceneName == MenuScene;
             _silenced = false;
@@ -105,6 +108,26 @@ namespace Piso7.Core
 
         void Update()
         {
+            if (_enterCampus)
+            {
+                _enterCampus = false;
+                Time.timeScale = 1f;
+                BloqueaJuego = false;
+                HideFondoMenu();
+                if (!Application.CanStreamedLevelBeLoaded(FirstScene))
+                {
+                    Debug.LogError("No se pudo abrir " + FirstScene + ": agrégala en File > Build Profiles > Scene List.");
+                    Show(true);
+                    return;
+                }
+
+                ClosePanels();
+                Show(false);
+                GameSession.Ensure().ResetRun();
+                SceneManager.LoadScene(FirstScene);
+                return;
+            }
+
             if (_outcome != null) return;
             var keyboard = Keyboard.current;
             if (!MobileControls.Pause && (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame))
@@ -160,16 +183,20 @@ namespace Piso7.Core
             scaler.matchWidthOrHeight = 0.5f;
             _canvas.AddComponent<GraphicRaycaster>();
 
-            var fondo = Sprite("Menu/fondo");
+            var fondo = Sprite("Menu/fondo_lobby");
+            if (fondo == null)
+                Debug.LogWarning("Falta Resources/Menu/fondo_lobby. El menú no tiene el fondo nuevo.");
             var bg = Stretch(_canvas.transform, "Fondo", fondo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             bg.color = Color.white;
             bg.raycastTarget = true;
+            bg.preserveAspect = false;
 
-            var jugar = BigButton("Jugar", "Menu/boton_jugar", "Menu/boton_jugar_pressed", new Vector2(0.5f, 0.64f), OnPlay);
-            var personaje = BigButton("Personaje", "Menu/boton_personaje", "Menu/boton_personaje_pressed", new Vector2(0.5f, 0.48f), OnCharacters);
-            var opciones = BigButton("Opciones", "Menu/boton_opciones", "Menu/boton_opciones_pressed", new Vector2(0.5f, 0.32f), OnOptions);
-            IconButton("Sobre", "Menu/boton_sobre", "Menu/boton_sobre_pressed", new Vector2(0.78f, 0.13f), OnHelp);
-            IconButton("Salir", "Menu/boton_salir", "Menu/boton_salir_pressed", new Vector2(0.90f, 0.13f), OnExit);
+            // Zonas de clic sobre el arte 1672x941. El titulo y las letras ya van pintados.
+            // CREDITOS esta en el dibujo (345,611-692,666) y no tiene metodo: no recibe clic.
+            var jugar = ArtButton("Jugar", 306f, 387f, 700f, 451f, OnPlay);
+            var personaje = ArtButton("Personaje", 345f, 467f, 692f, 523f, OnCharacters);
+            var opciones = ArtButton("Opciones", 345f, 539f, 692f, 594f, OnOptions);
+            var salir = ArtButton("Salir", 345f, 683f, 692f, 738f, OnExit);
 
             _banner = new GameObject("Aviso");
             _banner.transform.SetParent(_canvas.transform, false);
@@ -195,6 +222,7 @@ namespace Piso7.Core
             jugar.name = "BotonJugar";
             personaje.name = "BotonPersonaje";
             opciones.name = "BotonOpciones";
+            salir.name = "BotonSalir";
         }
 
         void OptionsBody(Transform parent, Font font)
@@ -378,6 +406,43 @@ namespace Piso7.Core
 #endif
         }
 
+        void EnterCampus()
+        {
+            _enterCampus = true;
+            HideFondoMenu();
+        }
+
+        static void HideFondoMenu()
+        {
+            var blue = Resources.Load<Sprite>("Menu/fondo");
+            int count = SceneManager.sceneCount;
+            for (int s = 0; s < count; s++)
+            {
+                var scene = SceneManager.GetSceneAt(s);
+                if (!scene.IsValid() || !scene.isLoaded)
+                    continue;
+
+                var roots = scene.GetRootGameObjects();
+                for (int i = 0; i < roots.Length; i++)
+                {
+                    var root = roots[i];
+                    if (root == null)
+                        continue;
+                    if (root.name == "FondoMenu" || root.name == "FondoLobby")
+                        root.SetActive(false);
+
+                    if (blue == null)
+                        continue;
+                    var renderers = root.GetComponentsInChildren<SpriteRenderer>(true);
+                    for (int r = 0; r < renderers.Length; r++)
+                    {
+                        if (renderers[r] != null && renderers[r].sprite == blue)
+                            renderers[r].gameObject.SetActive(false);
+                    }
+                }
+            }
+        }
+
         void ClosePanels()
         {
             _startAfterChoice = false;
@@ -418,14 +483,11 @@ namespace Piso7.Core
                 MenuAudio.Click();
                 Player.PlayerWalkAnimator.Select(captured);
                 RefreshPortraits();
-                if (_startAfterChoice)
-                {
-                    _startAfterChoice = false;
-                    ClosePanels();
-                    Show(false);
-                    GameSession.Ensure().ResetRun();
-                    SceneManager.LoadScene(FirstScene);
-                }
+                if (!_startAfterChoice)
+                    return;
+
+                _startAfterChoice = false;
+                EnterCampus();
             });
             _portraitFrames[index] = frame;
 
@@ -500,6 +562,29 @@ namespace Piso7.Core
             events.AddComponent<EventSystem>();
             events.AddComponent<InputSystemUIInputModule>();
             DontDestroyOnLoad(events);
+        }
+
+        GameObject ArtButton(string name, float x0, float y0, float x1, float y1, UnityEngine.Events.UnityAction action)
+        {
+            const float artW = 1672f;
+            const float artH = 941f;
+            var go = new GameObject(name);
+            go.transform.SetParent(_canvas.transform, false);
+            var image = go.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0f);
+            image.raycastTarget = true;
+            var button = go.AddComponent<Button>();
+            button.targetGraphic = image;
+            button.transition = Selectable.Transition.None;
+            button.onClick.AddListener(action);
+            go.AddComponent<MenuButtonSound>();
+            var rt = image.rectTransform;
+            rt.anchorMin = new Vector2(x0 / artW, 1f - y1 / artH);
+            rt.anchorMax = new Vector2(x1 / artW, 1f - y0 / artH);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            return go;
         }
 
         GameObject BigButton(string name, string sprite, string pressed, Vector2 anchor, UnityEngine.Events.UnityAction action)

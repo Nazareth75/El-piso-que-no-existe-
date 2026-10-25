@@ -65,6 +65,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Dilan_Prototipo.unity
     guid: ba884432aa5c416e9951f0fdcbd78050
+  - enabled: 1
+    path: Assets/Scenes/Intro_UNIFRANZ.unity
+    guid: 1b5ad8c3b8e422f45b67cbb323e532a4
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -39,6 +39,11 @@ namespace Piso7.EditorTools
         [MenuItem("Piso7/4. Crear recorrido Descubre el campus")]
         public static void CreateTour()
         {
+            if (!EditorUtility.DisplayDialog("Recrear recorrido del campus",
+                    "Esto BORRA y vuelve a crear Campus_EntradaPrincipal, Recepcion, HallPrincipal, Escaleras, PasilloPiso1 y LabHistologia. Se pierden los cambios hechos a mano en esas escenas.",
+                    "Recrear", "Cancelar"))
+                return;
+
             ConfigureCampusImports();
             EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
 

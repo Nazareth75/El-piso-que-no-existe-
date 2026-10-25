@@ -45,6 +45,9 @@ namespace Piso7.EditorTools
         [MenuItem("Piso7/2. Crear escena Nivel 1 (Entrada)")]
         public static void CreateLevel1()
         {
+            if (!ConfirmOverwrite(ScenePath))
+                return;
+
             ConfigurePixelArtImports();
 
             // Cierra cualquier escena abierta (evita 2 AudioListeners / plantillas URP).
@@ -177,6 +180,9 @@ namespace Piso7.EditorTools
         [MenuItem("Piso7/3. Crear escena Intro UNIFRANZ (fondo animado)")]
         public static void CreateIntroScene()
         {
+            if (!ConfirmOverwrite("Assets/Scenes/Intro_UNIFRANZ.unity"))
+                return;
+
             ConfigurePixelArtImports();
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
             var cam = Camera.main;
@@ -209,6 +215,16 @@ namespace Piso7.EditorTools
             EditorSceneManager.SaveScene(scene, path);
             AddSceneToBuildSettings(path);
             Debug.Log("[Piso7] Escena Intro_UNIFRANZ creada con animación de 5 frames.");
+        }
+
+        static bool ConfirmOverwrite(string scenePath)
+        {
+            if (!File.Exists(scenePath))
+                return true;
+
+            return EditorUtility.DisplayDialog("La escena ya existe",
+                $"{scenePath} ya existe. Si continúas se BORRA y se crea de nuevo, perdiendo los cambios hechos a mano.",
+                "Recrear", "Cancelar");
         }
 
         static void EnsureSingleAudioListener(GameObject keepOn)
