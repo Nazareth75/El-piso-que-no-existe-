@@ -36,6 +36,8 @@ namespace Piso7.Player
         float _groundedTimer;
         float _jumpBufferTimer;
         bool _facingRight = true;
+        readonly Collider2D[] _groundHits = new Collider2D[12];
+        CapsuleCollider2D _capsule;
 
         public bool IsGrounded { get; private set; }
         public bool IsRunning { get; private set; }
@@ -45,6 +47,7 @@ namespace Piso7.Player
         void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
+            _capsule = GetComponent<CapsuleCollider2D>();
             _sprite = GetComponentInChildren<SpriteRenderer>();
             _facingRight = !faceLeftOnStart;
             if (_sprite != null) _sprite.flipX = faceLeftOnStart;
@@ -56,7 +59,7 @@ namespace Piso7.Player
             {
                 var go = new GameObject("GroundCheck");
                 go.transform.SetParent(transform);
-                go.transform.localPosition = new Vector3(0f, -0.95f, 0f);
+                go.transform.localPosition = new Vector3(_capsule.offset.x, _capsule.offset.y - _capsule.size.y * 0.5f, 0f);
                 groundCheck = go.transform;
             }
         }
@@ -124,7 +127,13 @@ namespace Piso7.Player
 
         void UpdateGroundedMemory()
         {
-            IsGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayers);
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(groundLayers);
+            int count = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, filter, _groundHits);
+            IsGrounded = false;
+            for (int i = 0; i < count; i++)
+                if (_groundHits[i].attachedRigidbody != _rb && _groundHits[i].bounds.max.y <= _capsule.bounds.min.y + groundCheckRadius)
+                    IsGrounded = true;
             if (IsGrounded)
                 _groundedTimer = groundedRememberTime;
             else
