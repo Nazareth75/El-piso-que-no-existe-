@@ -1,0 +1,13 @@
+source=unifranz_pixel_animation_staticbg_5frames.ase
+canvas=1672x941
+frame_size=1672x941
+frame_count=5
+sheet_cols=5
+sheet_rows=1
+sheet=unifranz_pixel_animation_staticbg_5frames_sheet.png
+duration[0]=180
+duration[1]=180
+duration[2]=180
+duration[3]=180
+duration[4]=180
+layers=UNIFRANZ Animation

@@ -1,0 +1,9 @@
+source=fondo de entrada universitaria .ase
+canvas=1254x1254
+frame_size=1254x1254
+frame_count=1
+sheet_cols=1
+sheet_rows=1
+sheet=fondo_de_entrada_universitaria_sheet.png
+duration[0]=100
+layers=Background
