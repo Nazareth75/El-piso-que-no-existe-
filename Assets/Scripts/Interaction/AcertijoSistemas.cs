@@ -7,6 +7,7 @@ namespace Piso7.Interaction
     {
         [SerializeField] int computadora = 1;
         static int puntos;
+        static AcertijoSistemas abiertaActual;
         static readonly bool[] completados = new bool[4];
         static readonly Pregunta[] tecnologia = {
             new Pregunta("¿Qué convierte código en instrucciones?", "Compilador", "Monitor", "Teclado"), new Pregunta("¿Qué almacena datos temporalmente?", "RAM", "CPU", "Mouse"), new Pregunta("¿Qué significa URL?", "Dirección web", "Virus local", "Unidad de red"), new Pregunta("¿Cuál es un sistema operativo?", "Linux", "HTML", "USB"), new Pregunta("¿Qué protege una red?", "Firewall", "Impresora", "Pantalla") };
@@ -22,13 +23,42 @@ namespace Piso7.Interaction
         int[] memoria = new int[4];
         float mostrarMemoriaHasta;
 
+        bool EsObjetoAnterior => computadora == 1 && Mathf.Abs(transform.position.x - 6f) > .1f;
+        bool EnZona(float x)
+        {
+            var zona = GetComponent<Collider2D>();
+            return !EsObjetoAnterior && zona != null && Mathf.Abs(x - transform.position.x) <= zona.bounds.extents.x;
+        }
+
         public string Prompt => "Presiona E para usar computadora " + computadora;
-        public bool CanInteract => !abierto;
+        public bool CanInteract
+        {
+            get
+            {
+                var jugador = GameObject.FindGameObjectWithTag("Player");
+                return abiertaActual == null && !abierto && jugador != null && EnZona(jugador.transform.position.x);
+            }
+        }
 
         public void Interact(PlayerInteractor interactor)
         {
+            if (abiertaActual != null || Cercana(interactor.transform.position.x) != this) return;
             abierto = true;
+            abiertaActual = this;
             if (!completados[computadora - 1]) Iniciar();
+        }
+
+        static AcertijoSistemas Cercana(float x)
+        {
+            AcertijoSistemas mejor = null;
+            float distancia = float.MaxValue;
+            foreach (var candidata in UnityEngine.Object.FindObjectsByType<AcertijoSistemas>(FindObjectsSortMode.None))
+            {
+                if (!candidata.EnZona(x)) continue;
+                float d = Mathf.Abs(candidata.transform.position.x - x);
+                if (d < distancia) { distancia = d; mejor = candidata; }
+            }
+            return mejor;
         }
 
         void Iniciar()
@@ -44,7 +74,7 @@ namespace Piso7.Interaction
 
         void OnGUI()
         {
-            if (computadora == 1) GUI.Label(new Rect(155, 46, 180, 28), "Puntos: " + puntos);
+            if (computadora == 1 && !EsObjetoAnterior) GUI.Label(new Rect(155, 46, 180, 28), "Puntos: " + puntos);
             if (!abierto) return;
             var caja = new Rect(Screen.width / 2 - 260, Screen.height / 2 - 180, 520, 360);
             GUI.Box(caja, "COMPUTADORA " + computadora);
@@ -84,7 +114,7 @@ namespace Piso7.Interaction
         {
             GUI.Label(new Rect(caja.x + 80, caja.y + 105, 360, 35), texto);
             if (fallo && GUI.Button(new Rect(caja.x + 175, caja.y + 165, 170, 36), "Reintentar")) Iniciar();
-            if (GUI.Button(new Rect(caja.x + 175, caja.y + 225, 170, 36), "Cerrar")) abierto = false;
+            if (GUI.Button(new Rect(caja.x + 175, caja.y + 225, 170, 36), "Cerrar")) { abierto = false; abiertaActual = null; }
         }
 
         void Ganar() { ganado = true; completados[computadora - 1] = true; puntos += 5; }
