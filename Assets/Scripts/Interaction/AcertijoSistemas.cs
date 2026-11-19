@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Piso7.Interaction
 {
@@ -7,7 +8,9 @@ namespace Piso7.Interaction
     {
         [SerializeField] int computadora = 1;
         static int puntos;
+        static int sistemas;
         static AcertijoSistemas abiertaActual;
+        public UnityEvent alSumarSistemas = new UnityEvent();
         static readonly bool[] completados = new bool[4];
         static readonly Pregunta[] tecnologia = {
             new Pregunta("¿Qué convierte código en instrucciones?", "Compilador", "Monitor", "Teclado"), new Pregunta("¿Qué almacena datos temporalmente?", "RAM", "CPU", "Mouse"), new Pregunta("¿Qué significa URL?", "Dirección web", "Virus local", "Unidad de red"), new Pregunta("¿Cuál es un sistema operativo?", "Linux", "HTML", "USB"), new Pregunta("¿Qué protege una red?", "Firewall", "Impresora", "Pantalla") };
@@ -22,6 +25,7 @@ namespace Piso7.Interaction
         bool[] usados = new bool[4];
         int[] memoria = new int[4];
         float mostrarMemoriaHasta;
+        float pistaHasta;
 
         bool EnZona(float x)
         {
@@ -72,16 +76,23 @@ namespace Piso7.Interaction
 
         void OnGUI()
         {
-            if (computadora == 1) GUI.Label(new Rect(155, 46, 180, 28), "Puntos: " + puntos);
-            if (!abierto) return;
-            var caja = new Rect(Screen.width / 2 - 260, Screen.height / 2 - 180, 520, 360);
-            GUI.Box(caja, "COMPUTADORA " + computadora);
-            if (ganado) { Mensaje(caja, "¡Completado! +5 puntos"); return; }
-            if (completados[computadora - 1]) { Mensaje(caja, "Ya completado"); return; }
-            if (fallo) { Mensaje(caja, "Fallaste. Puedes reintentar."); return; }
-            if (computadora == 1) Preguntas(caja, tecnologia);
-            else if (computadora == 2) Preguntas(caja, acertijos);
-            else if (computadora == 3) Ordenar(caja); else Memoria(caja);
+            Color anterior = GUI.contentColor;
+            GUI.contentColor = Color.black;
+            try
+            {
+                if (computadora == 1) GUI.Label(new Rect(155, 46, 250, 28), "Puntos: " + puntos + "   Sistemas: " + sistemas);
+                if (Time.time < pistaHasta) GUI.Box(new Rect(Screen.width - 310, 42, 280, 38), "PISTA OBTENIDA: BIBLIOTECA ->");
+                if (!abierto) return;
+                var caja = new Rect(Screen.width / 2 - 260, Screen.height / 2 - 180, 520, 360);
+                GUI.Box(caja, "COMPUTADORA " + computadora);
+                if (ganado) { Mensaje(caja, "Pista obtenida\n¡Completado! +5 puntos"); return; }
+                if (completados[computadora - 1]) { Mensaje(caja, "Ya completado"); return; }
+                if (fallo) { Mensaje(caja, "Fallaste. Puedes reintentar."); return; }
+                if (computadora == 1) Preguntas(caja, tecnologia);
+                else if (computadora == 2) Preguntas(caja, acertijos);
+                else if (computadora == 3) Ordenar(caja); else Memoria(caja);
+            }
+            finally { GUI.contentColor = anterior; }
         }
 
         void Preguntas(Rect caja, Pregunta[] lista)
@@ -115,7 +126,16 @@ namespace Piso7.Interaction
             if (GUI.Button(new Rect(caja.x + 175, caja.y + 225, 170, 36), "Cerrar")) { abierto = false; abiertaActual = null; }
         }
 
-        void Ganar() { ganado = true; completados[computadora - 1] = true; puntos += 5; }
+        void Ganar()
+        {
+            ganado = true;
+            completados[computadora - 1] = true;
+            puntos += 5;
+            sistemas++;
+            pistaHasta = Time.time + 6f;
+            // TODO: conectar alSumarSistemas a RumboCarrera.SumarSistemas al juntar la rama de Kathlen.
+            alSumarSistemas.Invoke();
+        }
         static void Mezclar(int[] valores) { for (int i = valores.Length - 1; i > 0; i--) { int j = UnityEngine.Random.Range(0, i + 1); int t = valores[i]; valores[i] = valores[j]; valores[j] = t; } }
         class Pregunta { public string texto; public string[] opciones; public Pregunta(string texto, string correcta, string dos, string tres) { this.texto = texto; opciones = new[] { correcta, dos, tres }; } }
     }
