@@ -51,9 +51,7 @@ public class JuegoSimple : MonoBehaviour
     void Start()
     {
         if (!preparado) return;
-        Piso7.Core.GameSession.Ensure().SetObjective(persecucionEscaleras ?
-            "Huye por las escaleras hasta la zona verde. Shift: correr; Espacio: saltar." :
-            "Cruza la entrada y evita a la entidad. Espacio: saltar.");
+        Piso7.Core.RecorridoNiveles.Asegurar().PrepararEncuentro(persecucionEscaleras);
         if (persecucionEscaleras) campusPlayer?.StartEscapeBoost();
     }
 
@@ -149,7 +147,10 @@ public class JuegoSimple : MonoBehaviour
         tension.Stop();
         Piso7.Core.MenuAudio.PauseMusic();
         campusPlayer?.StopEscapeBoost();
-        Piso7.Core.GameSession.Ensure().SetObjective("Escapaste. La zona es segura; puedes continuar el recorrido.");
+        if (persecucionEscaleras)
+            Piso7.Core.RecorridoNiveles.Asegurar().CompletarHuida();
+        else
+            Piso7.Core.RecorridoNiveles.Asegurar().CompletarEntrada();
     }
 
     void Perder()

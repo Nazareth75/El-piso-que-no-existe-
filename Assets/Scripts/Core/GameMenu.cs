@@ -15,6 +15,12 @@ namespace Piso7.Core
         public static GameMenu Instance { get; private set; }
         public static bool BloqueaJuego { get; private set; }
 
+        public static void FijarBloqueo(bool bloquear)
+        {
+            BloqueaJuego = bloquear;
+            Time.timeScale = bloquear ? 0f : 1f;
+        }
+
         const string MenuScene = "MainMenu";
         const string FirstScene = "Campus_EntradaPrincipal";
 
@@ -124,7 +130,13 @@ namespace Piso7.Core
                 ClosePanels();
                 Show(false);
                 GameSession.Ensure().ResetRun();
-                SceneManager.LoadScene(FirstScene);
+                RecorridoNiveles.Asegurar().NuevaPartida();
+                string inicio = Application.CanStreamedLevelBeLoaded("Intro_UNIFRANZ")
+                    ? "Intro_UNIFRANZ"
+                    : FirstScene;
+                if (inicio == FirstScene)
+                    PresentacionJuego.PedirTutorial();
+                SceneManager.LoadScene(inicio);
                 return;
             }
 
@@ -250,8 +262,8 @@ namespace Piso7.Core
         {
             var text = Label(parent, font,
                 Application.isMobilePlatform
-                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar    ATACAR: golpear (tres golpes)\nUSAR: interactuar con puertas y ascensor\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
-                    : "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; tres golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
+                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar\nUSAR: leer, hablar y decidir\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
+                    : "A y D, o las flechas, caminan\nShift corre    Espacio salta\nE lee, habla y usa lo que está cerca\nEn la clínica, 1 ayuda y 2 sigue de largo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú",
                 26, new Vector2(0f, 20f));
             text.alignment = TextAnchor.MiddleCenter;
             text.rectTransform.sizeDelta = new Vector2(760f, 280f);

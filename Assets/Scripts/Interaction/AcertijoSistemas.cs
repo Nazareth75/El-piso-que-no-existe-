@@ -152,9 +152,19 @@ namespace Piso7.Interaction
             puntos += 5;
             sistemas++;
             pistaHasta = Time.time + 6f;
-            // TODO: conectar alSumarSistemas a RumboCarrera.SumarSistemas al juntar la rama de Kathlen.
+            Piso7.Core.RecorridoNiveles.Asegurar().RegistrarSistemas();
+            if (Piso7.Core.RumboCarrera.Asegurar().Sistemas == 0)
+                Piso7.Core.RumboCarrera.Asegurar().SumarSistemas();
             alSumarSistemas.Invoke();
         }
+        public static void ReiniciarProgreso()
+        {
+            puntos = 0;
+            sistemas = 0;
+            abiertaActual = null;
+            System.Array.Clear(completados, 0, completados.Length);
+        }
+
         static void Mezclar(int[] valores) { for (int i = valores.Length - 1; i > 0; i--) { int j = UnityEngine.Random.Range(0, i + 1); int t = valores[i]; valores[i] = valores[j]; valores[j] = t; } }
         class Pregunta { public string texto; public string[] opciones; public Pregunta(string texto, string correcta, string dos, string tres) { this.texto = texto; opciones = new[] { correcta, dos, tres }; } }
     }

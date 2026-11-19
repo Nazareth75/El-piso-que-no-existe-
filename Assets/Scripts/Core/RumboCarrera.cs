@@ -76,6 +76,16 @@ namespace Piso7.Core
             _audio.PlayOneShot(_aviso, 0.45f);
         }
 
+        public void Reiniciar()
+        {
+            Sistemas = 0;
+            Medicina = 0;
+            Tercera = 0;
+            UltimaDecision = null;
+            ClinicaElegida = false;
+            AyudoEnClinica = false;
+        }
+
         public string Resumen()
         {
             return "Sistemas " + Sistemas + "   ·   Medicina " + Medicina + "   ·   " + NombreTercera + " " + Tercera;
@@ -83,8 +93,9 @@ namespace Piso7.Core
 
         void Anotar(string frase)
         {
-            var sesion = GameSession.Ensure();
-            sesion.SetObjective(frase + "  " + Resumen());
+            GameSession.Ensure().SetObjective(frase + "  " + Resumen());
+            if (RecorridoNiveles.Asegurar() != null)
+                RecorridoNiveles.Instancia.Refrescar();
         }
 
         static AudioClip CrearAviso()

@@ -44,7 +44,7 @@ namespace Piso7.Core
         public void ResetRun()
         {
             Health = maxHealth; Stamina = maxStamina;
-            SetObjective("Derrota al enemigo de la entrada. F o clic derecho para atacar.");
+            SetObjective("Nivel 1 · La llegada. Cruza la entrada y evita a la entidad.");
             VitalsChanged?.Invoke(Health, Stamina);
         }
 

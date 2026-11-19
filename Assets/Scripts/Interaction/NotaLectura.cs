@@ -28,6 +28,7 @@ namespace Piso7.Interaction
                 {
                     abierta = false;
                     leida = true;
+                    Piso7.Core.RecorridoNiveles.Asegurar().MarcarNotaLeida();
                 }
             }
 
