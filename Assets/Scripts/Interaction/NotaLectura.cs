@@ -17,6 +17,7 @@ namespace Piso7.Interaction
 
         void OnGUI()
         {
+            if (Piso7.Core.GameMenu.BloqueaJuego) return;
             if (abierta)
             {
                 var caja = new Rect(Screen.width / 2 - 230, Screen.height / 2 - 105, 460, 210);

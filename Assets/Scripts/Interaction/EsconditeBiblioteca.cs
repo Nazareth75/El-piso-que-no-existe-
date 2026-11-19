@@ -65,6 +65,7 @@ namespace Piso7.Interaction
 
         void OnGUI()
         {
+            if (Piso7.Core.GameMenu.BloqueaJuego) return;
             if (Camera.main == null) return;
             Vector3 centro = Camera.main.WorldToScreenPoint(transform.position);
             float escala = Mathf.Abs(Camera.main.WorldToScreenPoint(transform.position + Vector3.right).x - centro.x);

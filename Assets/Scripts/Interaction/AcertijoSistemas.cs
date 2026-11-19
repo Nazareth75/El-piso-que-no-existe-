@@ -76,6 +76,7 @@ namespace Piso7.Interaction
 
         void OnGUI()
         {
+            if (Piso7.Core.GameMenu.BloqueaJuego) return;
             Color anterior = GUI.contentColor;
             GUI.contentColor = Color.black;
             try
