@@ -1,54 +1,121 @@
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Piso7.Interaction
 {
     public class AcertijoSistemas : MonoBehaviour, IInteractable
     {
-        public UnityEvent alAcertar = new UnityEvent();
-        bool abierto;
-        bool completado;
-        bool pistaObtenida;
-        float pistaHasta;
+        [SerializeField] int computadora = 1;
+        static int puntos;
+        static AcertijoSistemas abiertaActual;
+        static readonly bool[] completados = new bool[4];
+        static readonly Pregunta[] tecnologia = {
+            new Pregunta("¿Qué convierte código en instrucciones?", "Compilador", "Monitor", "Teclado"), new Pregunta("¿Qué almacena datos temporalmente?", "RAM", "CPU", "Mouse"), new Pregunta("¿Qué significa URL?", "Dirección web", "Virus local", "Unidad de red"), new Pregunta("¿Cuál es un sistema operativo?", "Linux", "HTML", "USB"), new Pregunta("¿Qué protege una red?", "Firewall", "Impresora", "Pantalla") };
+        static readonly Pregunta[] acertijos = {
+            new Pregunta("Tengo teclas pero no abro puertas.", "Teclado", "Candado", "Reloj"), new Pregunta("Viajo por cables sin ser tren.", "Datos", "Ascensor", "Papel"), new Pregunta("Tengo memoria pero no pienso.", "Computadora", "Libro", "Silla"), new Pregunta("Soy una ventana sin vidrio.", "Navegador", "Puerta", "Espejo"), new Pregunta("Me apagas y sigo guardando todo.", "Disco duro", "Lámpara", "Parlante") };
+        static readonly string[] pasos = { "Encender equipo", "Iniciar sesión", "Abrir programa", "Guardar trabajo" };
+        static readonly string[] colores = { "ROJO", "AZUL", "VERDE", "AMARILLO" };
+        bool abierto, fallo, ganado;
+        int[] orden = new int[5];
+        int[] botones = new int[4];
+        int actual, siguiente;
+        bool[] usados = new bool[4];
+        int[] memoria = new int[4];
+        float mostrarMemoriaHasta;
 
-        public string Prompt => completado ? "Acertijo completado" : "Presiona E para resolver el acertijo";
-        public bool CanInteract => !abierto && !completado;
+        bool EnZona(float x)
+        {
+            var zona = GetComponent<Collider2D>();
+            return zona != null && Mathf.Abs(x - transform.position.x) <= zona.bounds.extents.x;
+        }
+
+        public string Prompt => completados[computadora - 1] ? "Ya completado" : "Presiona E para usar computadora " + computadora;
+        public bool CanInteract
+        {
+            get
+            {
+                var jugador = GameObject.FindGameObjectWithTag("Player");
+                return abiertaActual == null && !abierto && jugador != null && EnZona(jugador.transform.position.x);
+            }
+        }
 
         public void Interact(PlayerInteractor interactor)
         {
+            if (abiertaActual != null || Cercana(interactor.transform.position.x) != this) return;
             abierto = true;
+            abiertaActual = this;
+            if (!completados[computadora - 1]) Iniciar();
+        }
+
+        static AcertijoSistemas Cercana(float x)
+        {
+            AcertijoSistemas mejor = null;
+            float distancia = float.MaxValue;
+            foreach (var candidata in FindObjectsByType<AcertijoSistemas>(FindObjectsSortMode.None))
+            {
+                if (!candidata.EnZona(x)) continue;
+                float d = Mathf.Abs(candidata.transform.position.x - x);
+                if (d < distancia) { distancia = d; mejor = candidata; }
+            }
+            return mejor;
+        }
+
+        void Iniciar()
+        {
+            fallo = ganado = false; actual = siguiente = 0;
+            for (int i = 0; i < 5; i++) orden[i] = i;
+            Mezclar(orden); Array.Clear(usados, 0, usados.Length);
+            for (int i = 0; i < 4; i++) botones[i] = memoria[i] = i;
+            Mezclar(botones); Mezclar(memoria);
+            mostrarMemoriaHasta = Time.unscaledTime + 2.5f;
         }
 
         void OnGUI()
         {
-            if (Time.time < pistaHasta)
-                GUI.Box(new Rect(Screen.width - 300, 42, 270, 42), "PISTA: la biblioteca está a la derecha");
+            if (computadora == 1) GUI.Label(new Rect(155, 46, 180, 28), "Puntos: " + puntos);
             if (!abierto) return;
             var caja = new Rect(Screen.width / 2 - 260, Screen.height / 2 - 180, 520, 360);
-            GUI.Box(caja, "ACERTIJO DE SISTEMAS");
-            if (pistaObtenida)
-            {
-                GUI.Label(new Rect(caja.x + 150, caja.y + 105, 240, 32), "Pista obtenida");
-                if (GUI.Button(new Rect(caja.x + 175, caja.y + 190, 170, 36), "Cerrar")) abierto = false;
-                return;
-            }
-            GUI.Label(new Rect(caja.x + 35, caja.y + 55, 450, 45), "¿Qué convierte un programa en instrucciones para la computadora?");
-            if (GUI.Button(new Rect(caja.x + 65, caja.y + 120, 390, 36), "A. Un compilador")) Acertar();
-            if (GUI.Button(new Rect(caja.x + 65, caja.y + 168, 390, 36), "B. Un monitor")) Incorrecta();
-            if (GUI.Button(new Rect(caja.x + 65, caja.y + 216, 390, 36), "C. Un teclado")) Incorrecta();
-            if (GUI.Button(new Rect(caja.x + 175, caja.y + 285, 170, 32), "Cerrar")) abierto = false;
+            GUI.Box(caja, "COMPUTADORA " + computadora);
+            if (ganado) { Mensaje(caja, "¡Completado! +5 puntos"); return; }
+            if (completados[computadora - 1]) { Mensaje(caja, "Ya completado"); return; }
+            if (fallo) { Mensaje(caja, "Fallaste. Puedes reintentar."); return; }
+            if (computadora == 1) Preguntas(caja, tecnologia);
+            else if (computadora == 2) Preguntas(caja, acertijos);
+            else if (computadora == 3) Ordenar(caja); else Memoria(caja);
         }
 
-        void Incorrecta() { abierto = false; }
-        void Acertar()
+        void Preguntas(Rect caja, Pregunta[] lista)
         {
-            completado = true;
-            pistaObtenida = true;
-            pistaHasta = Time.time + 6f;
-            // TODO: cambiar la siguiente línea por RumboCarrera.Instance.SumarSistemas() al juntar la rama de Kathlen.
-            alAcertar.Invoke();
-            if (Piso7.Core.GameSession.Instance != null)
-                Piso7.Core.GameSession.Instance.SetObjective("Pista obtenida: busca la biblioteca.");
+            var p = lista[orden[actual]];
+            GUI.Label(new Rect(caja.x + 30, caja.y + 45, 460, 55), (actual + 1) + "/5  " + p.texto);
+            for (int i = 0; i < 3; i++) if (GUI.Button(new Rect(caja.x + 65, caja.y + 115 + i * 48, 390, 36), p.opciones[i])) Responder(i == 0);
         }
+
+        void Responder(bool correcta) { if (!correcta) { fallo = true; return; } if (++actual == 5) Ganar(); }
+
+        void Ordenar(Rect caja)
+        {
+            GUI.Label(new Rect(caja.x + 30, caja.y + 45, 460, 45), "Ordena el proceso: elige el siguiente paso.");
+            for (int i = 0; i < 4; i++) { int paso = botones[i]; if (!usados[paso] && GUI.Button(new Rect(caja.x + 65, caja.y + 100 + i * 48, 390, 36), pasos[paso]))
+            { if (paso != siguiente) { fallo = true; return; } usados[paso] = true; if (++siguiente == 4) Ganar(); } }
+        }
+
+        void Memoria(Rect caja)
+        {
+            if (Time.unscaledTime < mostrarMemoriaHasta) { GUI.Label(new Rect(caja.x + 30, caja.y + 70, 460, 40), "Memoriza: " + colores[memoria[0]] + " - " + colores[memoria[1]] + " - " + colores[memoria[2]] + " - " + colores[memoria[3]]); return; }
+            GUI.Label(new Rect(caja.x + 30, caja.y + 45, 460, 35), "Repite la secuencia de colores: " + siguiente + "/4");
+            for (int i = 0; i < 4; i++) if (GUI.Button(new Rect(caja.x + 65 + (i % 2) * 200, caja.y + 105 + (i / 2) * 55, 180, 40), colores[i]))
+            { if (i != memoria[siguiente]) { fallo = true; return; } if (++siguiente == 4) Ganar(); }
+        }
+
+        void Mensaje(Rect caja, string texto)
+        {
+            GUI.Label(new Rect(caja.x + 80, caja.y + 105, 360, 35), texto);
+            if (fallo && GUI.Button(new Rect(caja.x + 175, caja.y + 165, 170, 36), "Reintentar")) Iniciar();
+            if (GUI.Button(new Rect(caja.x + 175, caja.y + 225, 170, 36), "Cerrar")) { abierto = false; abiertaActual = null; }
+        }
+
+        void Ganar() { ganado = true; completados[computadora - 1] = true; puntos += 5; }
+        static void Mezclar(int[] valores) { for (int i = valores.Length - 1; i > 0; i--) { int j = UnityEngine.Random.Range(0, i + 1); int t = valores[i]; valores[i] = valores[j]; valores[j] = t; } }
+        class Pregunta { public string texto; public string[] opciones; public Pregunta(string texto, string correcta, string dos, string tres) { this.texto = texto; opciones = new[] { correcta, dos, tres }; } }
     }
 }
