@@ -28,6 +28,7 @@ namespace Piso7.Interaction
         float mostrarMemoriaHasta;
         float pistaHasta;
         int ignorarEHasta;
+        int bloquearInteraccionHasta;
 
         bool EnZona(float x)
         {
@@ -41,7 +42,7 @@ namespace Piso7.Interaction
             get
             {
                 var jugador = GameObject.FindGameObjectWithTag("Player");
-                return abiertaActual == null && !abierto && jugador != null && EnZona(jugador.transform.position.x);
+                return abiertaActual == null && !abierto && Time.frameCount > bloquearInteraccionHasta && jugador != null && EnZona(jugador.transform.position.x);
             }
         }
 
@@ -64,6 +65,7 @@ namespace Piso7.Interaction
         {
             abierto = false;
             abiertaActual = null;
+            bloquearInteraccionHasta = Time.frameCount + 1;
         }
 
         static AcertijoSistemas Cercana(float x)
