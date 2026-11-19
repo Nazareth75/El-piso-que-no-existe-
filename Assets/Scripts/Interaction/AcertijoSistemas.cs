@@ -81,6 +81,7 @@ namespace Piso7.Interaction
             try
             {
                 if (computadora == 1) GUI.Label(new Rect(155, 46, 250, 28), "Puntos: " + puntos + "   Sistemas: " + sistemas);
+                GUI.contentColor = Color.white;
                 if (Time.time < pistaHasta) GUI.Box(new Rect(Screen.width - 310, 42, 280, 38), "PISTA OBTENIDA: BIBLIOTECA ->");
                 if (!abierto) return;
                 var caja = new Rect(Screen.width / 2 - 260, Screen.height / 2 - 180, 520, 360);
