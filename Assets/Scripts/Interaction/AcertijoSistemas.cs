@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Events;
 
 namespace Piso7.Interaction
@@ -26,6 +27,7 @@ namespace Piso7.Interaction
         int[] memoria = new int[4];
         float mostrarMemoriaHasta;
         float pistaHasta;
+        int ignorarEHasta;
 
         bool EnZona(float x)
         {
@@ -48,7 +50,20 @@ namespace Piso7.Interaction
             if (abiertaActual != null || Cercana(interactor.transform.position.x) != this) return;
             abierto = true;
             abiertaActual = this;
+            ignorarEHasta = Time.frameCount + 1;
             if (!completados[computadora - 1]) Iniciar();
+        }
+
+        void Update()
+        {
+            if (!abierto || Time.frameCount <= ignorarEHasta || Piso7.Core.GameMenu.BloqueaJuego) return;
+            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) Cerrar();
+        }
+
+        void Cerrar()
+        {
+            abierto = false;
+            abiertaActual = null;
         }
 
         static AcertijoSistemas Cercana(float x)
@@ -125,7 +140,7 @@ namespace Piso7.Interaction
         {
             GUI.Label(new Rect(caja.x + 80, caja.y + 105, 360, 35), texto);
             if (fallo && GUI.Button(new Rect(caja.x + 175, caja.y + 165, 170, 36), "Reintentar")) Iniciar();
-            if (GUI.Button(new Rect(caja.x + 175, caja.y + 225, 170, 36), "Cerrar")) { abierto = false; abiertaActual = null; }
+            if (GUI.Button(new Rect(caja.x + 175, caja.y + 225, 170, 36), "Cerrar")) Cerrar();
         }
 
         void Ganar()
