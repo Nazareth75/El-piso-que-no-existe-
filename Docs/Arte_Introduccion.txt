@@ -1,0 +1,10 @@
+Fondo original generado con la herramienta integrada de generación de imágenes de OpenAI para este proyecto, 19 de noviembre de 2026.
+No representa una fotografía ni una reproducción exacta de instalaciones reales de UNIFRANZ.
+
+Prompt de generación
+Use case: stylized-concept. Asset type: full-screen cinematic background for a psychological horror exploration game called El piso que no existe, set in a contemporary Bolivian university. Create a polished atmospheric hand-painted cinematic environment, sophisticated concept art, richly detailed worn surfaces, believable architecture. Landscape 16:9. An empty university corridor at night recedes toward an old steel elevator slightly to the RIGHT of center, a thin ominous red light leaks from its almost closed doors, fluorescent ceiling lamps dim and uneven, noticeboards, classroom doors, tiled floor, distant emergency light, suspended dust, soft volumetric shadows. Muted cold charcoal and desaturated teal with a restrained warm crimson accent. Left half very dark, subtle architectural detail and ample calm negative space so real readable UI text can be placed on top. No people, no monster, no gore. Not cartoon, not simple geometry, not abstract shapes, not a UI mockup. No typography, no letters, no logos, no watermarks, no rendered buttons. Very high production quality independent game title sequence art, unsettling rather than action-horror.
+
+
+Archivo integrado en el proyecto:
+C:/Users/THINK PAD/Documents/Codex/2026-10-15/teng/work/el-piso-repo/Assets/Resources/Intro/pasillo_cinematico.png
+

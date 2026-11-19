@@ -29,6 +29,7 @@ namespace Piso7.Core
         bool _silenced;
         bool _startAfterChoice;
         GameObject _outcome;
+        bool _opening;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void ResetClock()
@@ -105,7 +106,7 @@ namespace Piso7.Core
 
         void Update()
         {
-            if (_outcome != null) return;
+            if (_outcome != null || _opening) return;
             var keyboard = Keyboard.current;
             if (!MobileControls.Pause && (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame))
                 return;
@@ -222,8 +223,8 @@ namespace Piso7.Core
         {
             var text = Label(parent, font,
                 Application.isMobilePlatform
-                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar    ATACAR: golpear (tres golpes)\nUSAR: interactuar con puertas y ascensor\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
-                    : "A y D caminan\nShift corre    Espacio salta\nF o clic derecho ataca; tres golpes derrotan al enemigo\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
+                    ? "IZQ y DER: caminar\nMantén CORRER y una dirección para correr\nSALTAR: saltar. Evita a la entidad; no luches.\nUSAR: interactuar con puertas y ascensor\nPAUSA: abrir o cerrar este menú\nDetente en las flechas para cambiar de lugar"
+                    : "A y D caminan\nShift corre    Espacio salta\nEvita a la entidad y busca la zona segura en las escaleras\nLlega a una flecha para cambiar de lugar\nEsc abre este menú\nEl ascensor se usa con clic o con E",
                 26, new Vector2(0f, 20f));
             text.alignment = TextAnchor.MiddleCenter;
             text.rectTransform.sizeDelta = new Vector2(760f, 280f);
@@ -401,8 +402,18 @@ namespace Piso7.Core
                     _startAfterChoice = false;
                     ClosePanels();
                     Show(false);
-                    GameSession.Ensure().ResetRun();
-                    SceneManager.LoadScene(FirstScene);
+                    _opening = true;
+                    BloqueaJuego = true;
+                    var intro = new GameObject("Introducción y tutorial").AddComponent<IntroTutorial>();
+                    intro.transform.SetParent(transform, false);
+                    intro.Begin(() =>
+                    {
+                        _opening = false;
+                        GameSession.Ensure().ResetRun();
+                        Time.timeScale = 1f;
+                        BloqueaJuego = false;
+                        SceneManager.LoadScene(FirstScene);
+                    });
                 }
             });
             _portraitFrames[index] = frame;
