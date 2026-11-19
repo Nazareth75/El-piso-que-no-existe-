@@ -35,11 +35,16 @@ namespace Piso7.Player
         Vector2 _spawn;
         bool _fallHandled;
         float _moveInput;
+        float _escapeBoostRemaining;
+        public void StartEscapeBoost() { _escapeBoostRemaining = 1.5f; }
+        public void StopEscapeBoost() { _escapeBoostRemaining = 0f; }
         bool _jumpPressed;
         bool _runHeld;
         float _groundedTimer;
         float _jumpBufferTimer;
         bool _facingRight = true;
+        readonly Collider2D[] _groundHits = new Collider2D[12];
+        CapsuleCollider2D _capsule;
 
         public bool IsGrounded { get; private set; }
         public bool IsRunning { get; private set; }
@@ -50,6 +55,7 @@ namespace Piso7.Player
         {
             _rb = GetComponent<Rigidbody2D>();
             _bodyCollider = GetComponent<Collider2D>();
+            _capsule = GetComponent<CapsuleCollider2D>();
             _spawn = transform.position;
             foreach (var root in gameObject.scene.GetRootGameObjects())
                 if (root.name == "Suelo") _floor = root.GetComponent<Collider2D>();
@@ -64,7 +70,7 @@ namespace Piso7.Player
             {
                 var go = new GameObject("GroundCheck");
                 go.transform.SetParent(transform);
-                go.transform.localPosition = new Vector3(0f, -0.95f, 0f);
+                go.transform.localPosition = new Vector3(_capsule.offset.x, _capsule.offset.y - _capsule.size.y * 0.5f, 0f);
                 groundCheck = go.transform;
             }
         }
@@ -83,6 +89,7 @@ namespace Piso7.Player
                 return;
             }
             _fallHandled = false;
+            if (!Core.GameMenu.BloqueaJuego) _escapeBoostRemaining = Mathf.Max(0f, _escapeBoostRemaining - Time.deltaTime);
             ReadInput();
             UpdateFacing();
             UpdateGroundedMemory();
@@ -103,7 +110,7 @@ namespace Piso7.Player
                 _rb.position = pos;
                 if ((_moveInput < 0f && pos.x <= min + 0.03f) || (_moveInput > 0f && pos.x >= max - 0.03f)) _moveInput = 0f;
             }
-            float targetSpeed = IsRunning ? runSpeed : walkSpeed;
+            float targetSpeed = (IsRunning ? runSpeed : walkSpeed) * (_escapeBoostRemaining > 0f ? 1.25f : 1f);
             _rb.linearVelocity = new Vector2(_moveInput * targetSpeed, _rb.linearVelocity.y);
         }
 
@@ -154,7 +161,14 @@ namespace Piso7.Player
 
         void UpdateGroundedMemory()
         {
-            IsGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayers);
+            groundCheck.position = new Vector3(_capsule.bounds.center.x, _capsule.bounds.min.y, transform.position.z);
+            var filter = new ContactFilter2D { useTriggers = false };
+            filter.SetLayerMask(groundLayers);
+            int count = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, filter, _groundHits);
+            IsGrounded = false;
+            for (int i = 0; i < count; i++)
+                if (_groundHits[i].attachedRigidbody != _rb && _groundHits[i].bounds.max.y <= _capsule.bounds.min.y + groundCheckRadius)
+                    IsGrounded = true;
             if (IsGrounded)
                 _groundedTimer = groundedRememberTime;
             else
@@ -176,10 +190,11 @@ namespace Piso7.Player
 
         void UpdateStamina()
         {
-            bool wantsRun = _runHeld && Mathf.Abs(_moveInput) > 0.1f && IsGrounded;
+            if (Core.GameMenu.BloqueaJuego) { IsRunning = false; return; }
+            bool wantsRun = _runHeld && Mathf.Abs(_moveInput) > 0.1f;
             IsRunning = false;
 
-            var session = Core.GameSession.Instance;
+            var session = Core.GameSession.Ensure();
             if (wantsRun)
             {
                 if (session == null || session.TrySpendStamina(runStaminaCostPerSecond * Time.deltaTime))
@@ -216,4 +231,3 @@ namespace Piso7.Player
         }
     }
 }
-
