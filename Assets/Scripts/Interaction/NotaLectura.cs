@@ -22,7 +22,7 @@ namespace Piso7.Interaction
                 var caja = new Rect(Screen.width / 2 - 230, Screen.height / 2 - 105, 460, 210);
                 GUI.Box(caja, "NOTA");
                 GUI.Label(new Rect(caja.x + 28, caja.y + 52, caja.width - 56, 70),
-                    "Si encontraste esto, no intentes salir todavía.\nDescubre el último piso.");
+                    "Si encontraste esto, no intentes salir todavía. Descubre el piso que no existe.");
                 if (GUI.Button(new Rect(caja.x + 165, caja.y + 150, 130, 32), "Cerrar"))
                 {
                     abierta = false;

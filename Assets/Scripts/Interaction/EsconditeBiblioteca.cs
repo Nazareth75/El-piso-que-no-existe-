@@ -12,23 +12,36 @@ namespace Piso7.Interaction
         Vector3 entidad;
         bool descubierto;
         bool paso;
+        bool silencio;
+        float volumenAnterior;
 
         void Start()
         {
             var encontrado = GameObject.FindGameObjectWithTag("Player");
             if (encontrado != null) jugador = encontrado.transform;
-            entidad = transform.position + Vector3.left * 7f;
+            entidad = transform.position + Vector3.right * 7f;
         }
 
         void Update()
         {
-            if (descubierto) return;
-            entidad += Vector3.right * velocidadEntidad * Time.deltaTime;
+            if (descubierto || paso) return;
+            entidad += Vector3.left * velocidadEntidad * Time.deltaTime;
+            if (jugador != null && !silencio && DentroDeZona())
+            {
+                volumenAnterior = AudioListener.volume;
+                AudioListener.volume = 0f;
+                silencio = true;
+            }
             if (jugador != null && Mathf.Abs(entidad.x - jugador.position.x) < .25f)
             {
                 if (DentroDeZona()) paso = true;
                 else descubierto = true;
             }
+        }
+
+        void OnDisable()
+        {
+            if (silencio) AudioListener.volume = volumenAnterior;
         }
 
         bool DentroDeZona()
@@ -53,7 +66,7 @@ namespace Piso7.Interaction
             if (!descubierto) return;
 
             var caja = new Rect(Screen.width / 2 - 150, Screen.height / 2 - 70, 300, 140);
-            GUI.Box(caja, "TE DESCUBRIÓ");
+            GUI.Box(caja, "GAME OVER");
             GUI.Label(new Rect(caja.x + 45, caja.y + 42, 210, 25), "No estabas en el escondite.");
             if (GUI.Button(new Rect(caja.x + 85, caja.y + 85, 130, 32), "Reintentar"))
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
