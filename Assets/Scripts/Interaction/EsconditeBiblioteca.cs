@@ -9,6 +9,7 @@ namespace Piso7.Interaction
         [SerializeField] float velocidadEntidad = 2f;
 
         Transform jugador;
+        Rigidbody2D cuerpoJugador;
         Vector3 entidad;
         bool descubierto;
         bool paso;
@@ -18,7 +19,11 @@ namespace Piso7.Interaction
         void Start()
         {
             var encontrado = GameObject.FindGameObjectWithTag("Player");
-            if (encontrado != null) jugador = encontrado.transform;
+            if (encontrado != null)
+            {
+                jugador = encontrado.transform;
+                cuerpoJugador = encontrado.GetComponent<Rigidbody2D>();
+            }
             entidad = transform.position + Vector3.right * 7f;
         }
 
@@ -35,8 +40,16 @@ namespace Piso7.Interaction
             if (jugador != null && Mathf.Abs(entidad.x - jugador.position.x) < .25f)
             {
                 if (DentroDeZona()) paso = true;
-                else descubierto = true;
+                else Perder();
             }
+        }
+
+        void Perder()
+        {
+            descubierto = true;
+            if (cuerpoJugador == null) return;
+            cuerpoJugador.linearVelocity = Vector2.zero;
+            cuerpoJugador.simulated = false;
         }
 
         void OnDisable()
