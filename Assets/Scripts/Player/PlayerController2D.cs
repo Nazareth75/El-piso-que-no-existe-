@@ -31,6 +31,9 @@ namespace Piso7.Player
         Rigidbody2D _rb;
         SpriteRenderer _sprite;
         float _moveInput;
+        float _escapeBoostRemaining;
+        public void StartEscapeBoost() { _escapeBoostRemaining = 1.5f; }
+        public void StopEscapeBoost() { _escapeBoostRemaining = 0f; }
         bool _jumpPressed;
         bool _runHeld;
         float _groundedTimer;
@@ -66,6 +69,7 @@ namespace Piso7.Player
 
         void Update()
         {
+            if (!Core.GameMenu.BloqueaJuego) _escapeBoostRemaining = Mathf.Max(0f, _escapeBoostRemaining - Time.deltaTime);
             ReadInput();
             UpdateFacing();
             UpdateGroundedMemory();
@@ -76,7 +80,7 @@ namespace Piso7.Player
         void FixedUpdate()
         {
             if (!_rb.simulated) return;
-            float targetSpeed = IsRunning ? runSpeed : walkSpeed;
+            float targetSpeed = (IsRunning ? runSpeed : walkSpeed) * (_escapeBoostRemaining > 0f ? 1.25f : 1f);
             _rb.linearVelocity = new Vector2(_moveInput * targetSpeed, _rb.linearVelocity.y);
         }
 
@@ -127,6 +131,7 @@ namespace Piso7.Player
 
         void UpdateGroundedMemory()
         {
+            groundCheck.position = new Vector3(_capsule.bounds.center.x, _capsule.bounds.min.y, transform.position.z);
             var filter = new ContactFilter2D { useTriggers = false };
             filter.SetLayerMask(groundLayers);
             int count = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, filter, _groundHits);
@@ -155,10 +160,11 @@ namespace Piso7.Player
 
         void UpdateStamina()
         {
-            bool wantsRun = _runHeld && Mathf.Abs(_moveInput) > 0.1f && IsGrounded;
+            if (Core.GameMenu.BloqueaJuego) { IsRunning = false; return; }
+            bool wantsRun = _runHeld && Mathf.Abs(_moveInput) > 0.1f;
             IsRunning = false;
 
-            var session = Core.GameSession.Instance;
+            var session = Core.GameSession.Ensure();
             if (wantsRun)
             {
                 if (session == null || session.TrySpendStamina(runStaminaCostPerSecond * Time.deltaTime))
@@ -195,4 +201,3 @@ namespace Piso7.Player
         }
     }
 }
-
