@@ -170,7 +170,11 @@ public class InterfazCampus : MonoBehaviour
     {
         var cerca = juego.Cercano();
         if (cerca == null) return;
-        string texto = "E   " + cerca.nombre;
+        string texto = cerca.id == "gradas"
+            ? "E para subir por gradas al siguiente piso"
+            : cerca.id == "gradasMez"
+                ? "Q para bajar\nE para subir"
+                : "E   " + cerca.nombre;
         var camara = Camera.main;
         if (camara != null)
         {
@@ -180,7 +184,10 @@ public class InterfazCampus : MonoBehaviour
             {
                 float x = pantalla.x / escala;
                 float y = (Screen.height - pantalla.y) / escala;
-                var flotante = new Rect(x - 120f, y - 24f, 240f, 44f);
+                bool gradasPiso = cerca.id == "gradasMez";
+                float anchoAviso = cerca.id == "gradas" ? 460f : gradasPiso ? 280f : 240f;
+                float altoAviso = gradasPiso ? 58f : 44f;
+                var flotante = new Rect(x - anchoAviso * 0.5f, y - altoAviso * 0.5f, anchoAviso, altoAviso);
                 Relleno(flotante, new Color(0.06f, 0.08f, 0.14f, 0.94f));
                 Borde(flotante, new Color(0.95f, 0.48f, 0.12f));
                 GUI.Label(flotante, texto, pequeño);

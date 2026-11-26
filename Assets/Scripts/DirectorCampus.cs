@@ -133,13 +133,24 @@ public class DirectorCampus : MonoBehaviour
     {
         if (jugador == null) return;
 
-        if (dentro && salaId != "pisox" && jugando && panel == PanelCampus.Ninguno && jugador.transform.position.y < 1.7f && Time.time > puedeSalir)
+        if (dentro && salaId != "pisox" && salaId != "mezanine" && jugando && panel == PanelCampus.Ninguno && jugador.transform.position.y < 1.7f && Time.time > puedeSalir)
             SalirSala();
 
         if (jugando && panel == PanelCampus.Ninguno && Input.GetKeyDown(KeyCode.E))
         {
             var cerca = Cercano();
-            if (cerca != null) Usar(cerca.id);
+            if (cerca != null)
+            {
+                if (cerca.id == "gradasMez") SubirDesdeMezanine();
+                else Usar(cerca.id);
+            }
+        }
+
+        if (jugando && panel == PanelCampus.Ninguno && Input.GetKeyDown(KeyCode.Q))
+        {
+            var cerca = Cercano();
+            if (cerca != null && cerca.id == "gradasMez")
+                SalirSala();
         }
 
         if (jugando && (panel == PanelCampus.Ninguno || panel == PanelCampus.Pausa) && Input.GetKeyDown(KeyCode.Escape))
@@ -205,6 +216,14 @@ public class DirectorCampus : MonoBehaviour
                     return new PuntoCampus { id = "cruzar", nombre = "Cruzar el círculo", posicion = portalPiso, radio = 1.8f };
                 if (aqui.x < 3.2f)
                     return new PuntoCampus { id = "volver", nombre = "Volver al campus", posicion = aqui, radio = 3f };
+                return null;
+            }
+
+            if (salaId == "mezanine")
+            {
+                var grada = new Vector2(10.94f, 14.15f);
+                if (Vector2.Distance(aqui, grada) <= 2.4f)
+                    return new PuntoCampus { id = "gradasMez", nombre = "gradas", posicion = grada, radio = 2.4f };
                 return null;
             }
 
@@ -397,6 +416,18 @@ public class DirectorCampus : MonoBehaviour
         if (id == "volver")
         {
             SalirPisoX();
+            return;
+        }
+
+        if (id == "gradas")
+        {
+            SubirMezanine();
+            return;
+        }
+
+        if (id == "bajar")
+        {
+            SalirSala();
             return;
         }
 
@@ -1027,7 +1058,8 @@ public class DirectorCampus : MonoBehaviour
         Punto("huella", "Control de huella", new Vector2(21.15f, 9.8f), 1.8f);
         Punto("huella", "Control de huella", new Vector2(21.15f, 6.65f), 1.8f);
         Punto("huella", "Control de huella", new Vector2(21.15f, 4.57f), 1.8f);
-        Punto("ascensor", "Ascensor", Celda(15, 2), 2.2f);
+        Punto("ascensor", "Ascensor", Celda(15, 2), 1.45f);
+        Punto("gradas", "Subir", new Vector2(14.38f, 16.1f), 1.7f);
         Punto("servicios", "Servicios estudiantiles", Celda(12, 3), 1.35f);
         Punto("auditorio", "Auditorio", Celda(4, 4), 1.5f);
         Punto("cafeteria", "Cafetería", Celda(12, 16), 1.4f);
@@ -1053,6 +1085,7 @@ public class DirectorCampus : MonoBehaviour
         muro.transform.position = new Vector3(17.5f, 10f, 0f);
         muroHuella = muro.AddComponent<BoxCollider2D>();
         muroHuella.size = new Vector2(1.88f, 22f);
+        muroHuella.enabled = false;
     }
 
     void PuertaEn(Vector2 posicion, Sprite[] frames)
@@ -1077,7 +1110,7 @@ public class DirectorCampus : MonoBehaviour
 
     void CerrarPuertas()
     {
-        if (muroHuella != null) muroHuella.enabled = true;
+        if (muroHuella != null) muroHuella.enabled = false;
         foreach (var puerta in puertas) puerta.Cerrar();
     }
 
@@ -1295,6 +1328,41 @@ public class DirectorCampus : MonoBehaviour
 
         if (camara != null)
             camara.backgroundColor = vacio ? new Color(0.07f, 0.03f, 0.12f) : new Color(0.04f, 0.1f, 0.07f);
+    }
+
+    void SubirMezanine()
+    {
+        var tex = RecursosCampus.Textura("Campus/mezanine.jpg");
+        if (tex == null) return;
+        retornoSala = new Vector2(14.38f, 16.1f);
+        dentro = true;
+        salaId = "mezanine";
+        puedeSalir = Time.time + 0.6f;
+        if (presencia != null) presencia.persigue = false;
+        if (mapaGo != null) mapaGo.SetActive(false);
+        if (murosGo != null) murosGo.SetActive(false);
+        if (npcsGo != null) npcsGo.SetActive(false);
+        if (zonaVerde != null) zonaVerde.enabled = false;
+
+        salaAncho = 40f;
+        salaAlto = 20f;
+        interiorGo = new GameObject("Mezanine");
+        var dibujo = interiorGo.AddComponent<SpriteRenderer>();
+        dibujo.sprite = RecursosCampus.ComoSprite(tex, 25.6f, new Vector2(0.5f, 0.5f));
+        dibujo.sortingOrder = -20;
+        interiorGo.transform.position = new Vector3(20f, 10f, 0f);
+        marcoGo = new GameObject("Marco");
+        Borde(0.4f, 10f, 0.8f, 20f);
+        Borde(39.6f, 10f, 0.8f, 20f);
+        Borde(20f, 19.6f, 40f, 0.8f);
+        Borde(20f, 0.4f, 40f, 0.8f);
+        if (jugador != null) jugador.transform.localScale = Vector3.one;
+        PonerJugador(new Vector2(10.94f, 14.15f));
+    }
+
+    void SubirDesdeMezanine()
+    {
+        Decir("GRADAS", "Hacia arriba todavía no hay otro piso dibujado.", "");
     }
 
     void EntrarPisoX()
