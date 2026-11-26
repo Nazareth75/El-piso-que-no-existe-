@@ -6,7 +6,19 @@ public class InterfazCampus : MonoBehaviour
     GUIStyle cuerpo;
     GUIStyle boton;
     GUIStyle pequeño;
+    GUIStyle vacio;
     Texture2D blanco;
+    Texture2D menuArt;
+    Texture2D introArt;
+    Texture2D pausaArt;
+    Texture2D dialogoArt;
+    Texture2D objetivoArt;
+    Texture2D vidaArt;
+    Texture2D objetosArt;
+    Texture2D resultadosArt;
+    Texture2D carrerasArt;
+    Texture2D tutorArt;
+    Texture2D avisoArt;
     bool listo;
 
     void Preparar()
@@ -15,6 +27,18 @@ public class InterfazCampus : MonoBehaviour
         blanco = new Texture2D(1, 1, TextureFormat.RGBA32, false);
         blanco.SetPixel(0, 0, Color.white);
         blanco.Apply();
+        menuArt = RecursosCampus.Textura("Ui/menu_principal.png");
+        introArt = RecursosCampus.Textura("Ui/introduccion.png");
+        pausaArt = RecursosCampus.Textura("Ui/pausa.png");
+        dialogoArt = RecursosCampus.Textura("Ui/dialogo.png");
+        objetivoArt = RecursosCampus.Textura("Ui/objetivo.png");
+        vidaArt = RecursosCampus.Textura("Ui/hud_vida.png");
+        objetosArt = RecursosCampus.Textura("Ui/hud_objetos.png");
+        resultadosArt = RecursosCampus.Textura("Ui/resultados.png");
+        carrerasArt = RecursosCampus.Textura("Ui/carreras.png");
+        tutorArt = RecursosCampus.Textura("Ui/tutor.png");
+        avisoArt = RecursosCampus.Textura("Ui/notificaciones.png");
+        vacio = new GUIStyle();
 
         titulo = new GUIStyle(GUI.skin.label);
         titulo.fontSize = 30;
@@ -95,26 +119,55 @@ public class InterfazCampus : MonoBehaviour
 
         if (juego.GritoVisible)
         {
-            var caja = new Rect(ancho * 0.2f, alto * 0.18f, ancho * 0.6f, 64f);
-            Relleno(caja, new Color(0.35f, 0.08f, 0.12f, 0.92f));
+            var caja = new Rect(ancho * 0.25f, alto * 0.16f, ancho * 0.5f, 90f);
+            if (avisoArt != null)
+                GUI.DrawTexture(caja, avisoArt, ScaleMode.StretchToFill, true);
+            else
+                Relleno(caja, new Color(0.35f, 0.08f, 0.12f, 0.92f));
             GUI.Label(caja, juego.grito, pequeño);
         }
     }
 
     void Hud(DirectorCampus juego, float ancho)
     {
-        var barra = new Rect(16f, 12f, ancho - 32f, 36f);
-        Relleno(barra, new Color(0.06f, 0.08f, 0.14f, 0.88f));
-        Borde(barra, new Color(0.95f, 0.48f, 0.12f));
-        GUI.Label(barra, EstadoPartida.Objetivo(), pequeño);
+        if (objetivoArt != null)
+        {
+            var barra = new Rect(12f, 8f, 420f, 118f);
+            GUI.DrawTexture(barra, objetivoArt, ScaleMode.StretchToFill, true);
+            var texto = new Rect(barra.x + 54f, barra.y + 46f, barra.width - 70f, 62f);
+            Relleno(texto, new Color(0.03f, 0.04f, 0.1f, 0.82f));
+            GUI.Label(texto, EstadoPartida.Objetivo(), cuerpo);
+        }
+        else
+        {
+            var barra = new Rect(16f, 12f, ancho - 32f, 36f);
+            Relleno(barra, new Color(0.06f, 0.08f, 0.14f, 0.88f));
+            Borde(barra, new Color(0.95f, 0.48f, 0.12f));
+            GUI.Label(barra, EstadoPartida.Objetivo(), pequeño);
+        }
+
+        if (vidaArt != null)
+        {
+            var vida = new Rect(12f, 132f, 250f, 84f);
+            GUI.DrawTexture(vida, vidaArt, ScaleMode.StretchToFill, true);
+            float lleno = Mathf.Clamp01(juego.estamina / 100f);
+            var hueco = new Rect(vida.x + vida.width * 0.36f, vida.y + vida.height * 0.58f, vida.width * 0.56f, vida.height * 0.18f);
+            Relleno(hueco, new Color(0.02f, 0.04f, 0.08f, 0.85f));
+            Relleno(new Rect(hueco.x, hueco.y, hueco.width * lleno, hueco.height), new Color(0.25f, 0.9f, 1f, 0.95f));
+        }
+        else
+        {
+            Relleno(new Rect(16f, 56f, 204f, 16f), new Color(0f, 0f, 0f, 0.55f));
+            Relleno(new Rect(18f, 58f, 2f * juego.estamina, 12f), new Color(0.35f, 0.85f, 0.95f, 0.95f));
+            GUI.Label(new Rect(16f, 72f, 200f, 22f), "Aire al correr", pequeño);
+        }
+
+        if (objetosArt != null)
+            GUI.DrawTexture(new Rect(ancho - 280f, 8f, 268f, 96f), objetosArt, ScaleMode.StretchToFill, true);
 
         string rumbo = "Sistemas " + EstadoPartida.sistemas + "   Medicina " + EstadoPartida.medicina + "   " + EstadoPartida.NombreTercera;
-        var esquina = new Rect(ancho - 430f, 54f, 414f, 28f);
+        var esquina = new Rect(ancho - 460f, objetosArt != null ? 108f : 54f, 444f, 28f);
         GUI.Label(esquina, rumbo, pequeño);
-
-        Relleno(new Rect(16f, 56f, 204f, 16f), new Color(0f, 0f, 0f, 0.55f));
-        Relleno(new Rect(18f, 58f, 2f * juego.estamina, 12f), new Color(0.35f, 0.85f, 0.95f, 0.95f));
-        GUI.Label(new Rect(16f, 72f, 200f, 22f), "Aire al correr", pequeño);
     }
 
     void Prompt(DirectorCampus juego, float ancho, float alto)
@@ -146,16 +199,36 @@ public class InterfazCampus : MonoBehaviour
 
     void Menu(DirectorCampus juego, float ancho, float alto)
     {
+        if (menuArt == null)
+        {
+            MenuPlano(juego, ancho, alto);
+            return;
+        }
+
+        Velo(ancho, alto, 0.55f);
+        var puesta = Encajar(menuArt, new Rect(0f, 0f, ancho, alto - 64f));
+        GUI.DrawTexture(puesta, menuArt, ScaleMode.StretchToFill, true);
+        if (GUI.Button(Trozo(puesta, menuArt, 36f, 110f, 164f, 30f), "", vacio)) juego.NuevaPartida();
+        if (GUI.Button(Trozo(puesta, menuArt, 36f, 278f, 164f, 28f), "", vacio)) Salir();
+
+        float x = ancho * 0.5f - 160f;
+        GUI.backgroundColor = EstadoPartida.personaje == 0 ? new Color(0.95f, 0.48f, 0.12f) : new Color(0.16f, 0.22f, 0.36f);
+        if (GUI.Button(new Rect(x, alto - 54f, 150f, 40f), "Mochila", boton)) juego.ElegirPersonaje(0);
+        GUI.backgroundColor = EstadoPartida.personaje == 1 ? new Color(0.95f, 0.48f, 0.12f) : new Color(0.16f, 0.22f, 0.36f);
+        if (GUI.Button(new Rect(x + 170f, alto - 54f, 150f, 40f), "Cabello corto", boton)) juego.ElegirPersonaje(1);
+        GUI.backgroundColor = Color.white;
+    }
+
+    void MenuPlano(DirectorCampus juego, float ancho, float alto)
+    {
         Velo(ancho, alto, 0.45f);
         GUI.Label(new Rect(0f, 70f, ancho, 48f), "EL PISO QUE NO EXISTE 2.0", titulo);
         GUI.Label(new Rect(0f, 122f, ancho, 30f), "UNIFRANZ  ·  primer día", pequeño);
-
         float x = ancho * 0.5f - 150f;
         GUI.backgroundColor = EstadoPartida.personaje == 0 ? new Color(0.95f, 0.48f, 0.12f) : new Color(0.16f, 0.22f, 0.36f);
         if (GUI.Button(new Rect(x, 190f, 140f, 42f), "Mochila", boton)) juego.ElegirPersonaje(0);
         GUI.backgroundColor = EstadoPartida.personaje == 1 ? new Color(0.95f, 0.48f, 0.12f) : new Color(0.16f, 0.22f, 0.36f);
         if (GUI.Button(new Rect(x + 160f, 190f, 140f, 42f), "Cabello corto", boton)) juego.ElegirPersonaje(1);
-
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
         if (GUI.Button(new Rect(ancho * 0.5f - 120f, 270f, 240f, 48f), "Jugar", boton)) juego.NuevaPartida();
         GUI.backgroundColor = new Color(0.16f, 0.22f, 0.36f);
@@ -165,22 +238,43 @@ public class InterfazCampus : MonoBehaviour
 
     void Intro(DirectorCampus juego, float ancho, float alto)
     {
-        var caja = CajaCentral(ancho, alto, 640f, 340f);
-        GUI.Label(new Rect(caja.x, caja.y + 16f, caja.width, 40f), "Primer día", titulo);
-        GUI.Label(new Rect(caja.x + 28f, caja.y + 70f, caja.width - 56f, 180f),
-            "Es tu primer día en la universidad.\n\nUna estudiante te espera en la puerta y te hace el recorrido: recepción, admisiones, la clínica, gestión financiera, el auditorio, servicios, la cafetería y la game room.",
-            cuerpo);
-        GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-        if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 100f, caja.yMax - 64f, 200f, 44f), "Continuar", boton))
+        if (introArt == null)
+        {
+            var caja = CajaCentral(ancho, alto, 640f, 340f);
+            GUI.Label(new Rect(caja.x, caja.y + 16f, caja.width, 40f), "Primer día", titulo);
+            GUI.Label(new Rect(caja.x + 28f, caja.y + 70f, caja.width - 56f, 180f),
+                "Es tu primer día en la universidad.\n\nUna estudiante te espera en la puerta y te hace el recorrido: recepción, admisiones, la clínica, gestión financiera, el auditorio, servicios, la cafetería y la game room.",
+                cuerpo);
+            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
+            if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 100f, caja.yMax - 64f, 200f, 44f), "Continuar", boton))
+                juego.ContinuarIntro();
+            GUI.backgroundColor = Color.white;
+            return;
+        }
+
+        Velo(ancho, alto, 0.45f);
+        var puesta = Encajar(introArt, new Rect(ancho * 0.08f, 24f, ancho * 0.84f, alto - 48f));
+        GUI.DrawTexture(puesta, introArt, ScaleMode.StretchToFill, true);
+        if (GUI.Button(Trozo(puesta, introArt, 155f, 255f, 190f, 36f), "", vacio))
             juego.ContinuarIntro();
-        GUI.backgroundColor = Color.white;
     }
 
     void Tutorial(DirectorCampus juego, float ancho, float alto)
     {
-        var caja = CajaCentral(ancho, alto, 640f, 380f);
-        GUI.Label(new Rect(caja.x, caja.y + 12f, caja.width, 40f), "Cómo moverte", titulo);
-        GUI.Label(new Rect(caja.x + 28f, caja.y + 64f, caja.width - 56f, 230f),
+        var caja = CajaCentral(ancho, alto, 680f, 420f);
+        float yTexto = caja.y + 16f;
+        if (tutorArt != null)
+        {
+            var tutor = new Rect(caja.x + 16f, caja.y + 12f, caja.width - 32f, 96f);
+            GUI.DrawTexture(tutor, tutorArt, ScaleMode.StretchToFill, true);
+            yTexto = tutor.yMax + 8f;
+        }
+        else
+        {
+            GUI.Label(new Rect(caja.x, caja.y + 12f, caja.width, 40f), "Cómo moverte", titulo);
+            yTexto = caja.y + 64f;
+        }
+        GUI.Label(new Rect(caja.x + 28f, yTexto, caja.width - 56f, caja.yMax - yTexto - 72f),
             "Ves el campus desde arriba, como el plano.\n\nFlechas o W A S D: caminar\nShift: correr. La barra de aire se gasta.\nE: hablar, leer y usar la huella\nEn la clínica: 1 ayudar, 2 seguir de largo\nEsc: pausa\n\nSi la presencia te alcanza, repites solo esa huida. Tus carreras se conservan.",
             cuerpo);
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
@@ -201,14 +295,21 @@ public class InterfazCampus : MonoBehaviour
             y += 190f;
         }
 
-        float altoTexto = Mathf.Clamp(cuerpo.CalcHeight(new GUIContent(juego.fraseCuerpo), 600f) + 8f, 70f, 260f);
-        float altoCaja = Mathf.Max(200f, 56f + altoTexto + 64f);
+        float altoTexto = Mathf.Clamp(cuerpo.CalcHeight(new GUIContent(juego.fraseCuerpo), 380f) + 8f, 70f, 220f);
+        float altoCaja = Mathf.Max(210f, 70f + altoTexto + 64f);
         if (y + altoCaja > alto - 12f) y = Mathf.Max(12f, alto - 12f - altoCaja);
-        var caja = new Rect(ancho * 0.5f - 320f, y, 640f, altoCaja);
-        Relleno(caja, new Color(0.07f, 0.09f, 0.16f, 0.94f));
-        Borde(caja, new Color(0.95f, 0.48f, 0.12f));
-        GUI.Label(new Rect(caja.x + 16f, caja.y + 8f, caja.width - 32f, 32f), juego.fraseTitulo, pequeño);
-        GUI.Label(new Rect(caja.x + 20f, caja.y + 44f, caja.width - 40f, altoTexto), juego.fraseCuerpo, cuerpo);
+        var caja = new Rect(ancho * 0.5f - 340f, y, 680f, altoCaja);
+        if (dialogoArt != null)
+            GUI.DrawTexture(caja, dialogoArt, ScaleMode.StretchToFill, true);
+        else
+        {
+            Relleno(caja, new Color(0.07f, 0.09f, 0.16f, 0.94f));
+            Borde(caja, new Color(0.95f, 0.48f, 0.12f));
+        }
+        var zonaTexto = new Rect(caja.x + caja.width * 0.32f, caja.y + 36f, caja.width * 0.64f, altoTexto + 28f);
+        Relleno(zonaTexto, new Color(0.03f, 0.04f, 0.1f, 0.88f));
+        GUI.Label(new Rect(zonaTexto.x, zonaTexto.y, zonaTexto.width, 24f), juego.fraseTitulo, pequeño);
+        GUI.Label(new Rect(zonaTexto.x + 4f, zonaTexto.y + 26f, zonaTexto.width - 8f, altoTexto), juego.fraseCuerpo, cuerpo);
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
         string texto = juego.confirmarHuida ? "Correr" : "Cerrar";
         if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 90f, caja.yMax - 52f, 180f, 40f), texto, boton))
@@ -222,8 +323,7 @@ public class InterfazCampus : MonoBehaviour
         var tex = juego.Tarjeta("clinica");
         if (tex != null) GUI.DrawTexture(new Rect(ancho * 0.5f - 300f, 36f, 600f, 170f), tex, ScaleMode.ScaleToFit, true);
         var caja = new Rect(ancho * 0.5f - 320f, 210f, 640f, 220f);
-        Relleno(caja, new Color(0.07f, 0.09f, 0.16f, 0.94f));
-        Borde(caja, new Color(0.95f, 0.48f, 0.12f));
+        PintarCaja(caja);
         GUI.Label(new Rect(caja.x + 20f, caja.y + 16f, caja.width - 40f, 90f),
             "Un estudiante se torció el tobillo en las escaleras.\n1 ayudar suma Medicina. 2 seguir de largo no cambia nada.",
             cuerpo);
@@ -280,8 +380,7 @@ public class InterfazCampus : MonoBehaviour
         var tex = juego.Tarjeta("game_room");
         if (tex != null) GUI.DrawTexture(new Rect(ancho * 0.5f - 280f, 40f, 560f, 160f), tex, ScaleMode.ScaleToFit, true);
         var caja = new Rect(ancho * 0.5f - 260f, 220f, 520f, 180f);
-        Relleno(caja, new Color(0.07f, 0.09f, 0.16f, 0.94f));
-        Borde(caja, new Color(0.95f, 0.48f, 0.12f));
+        PintarCaja(caja);
         GUI.Label(new Rect(caja.x, caja.y + 16f, caja.width, 36f), "Pulsa " + juego.flecha, titulo);
         GUI.Label(new Rect(caja.x, caja.y + 70f, caja.width, 30f), "Aciertos " + juego.aciertos + " / 3", pequeño);
         GUI.backgroundColor = new Color(0.2f, 0.2f, 0.25f);
@@ -292,14 +391,30 @@ public class InterfazCampus : MonoBehaviour
 
     void Pausa(DirectorCampus juego, float ancho, float alto)
     {
-        var caja = CajaCentral(ancho, alto, 420f, 280f);
-        GUI.Label(new Rect(caja.x, caja.y + 16f, caja.width, 40f), "Pausa", titulo);
-        GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-        if (GUI.Button(new Rect(caja.x + 70f, caja.y + 80f, 280f, 44f), "Continuar", boton)) juego.CerrarPanel();
-        GUI.backgroundColor = new Color(0.16f, 0.22f, 0.36f);
-        if (EstadoPartida.huidaActiva && GUI.Button(new Rect(caja.x + 70f, caja.y + 136f, 280f, 44f), "Reintentar huida", boton)) juego.Reintentar();
-        if (GUI.Button(new Rect(caja.x + 70f, caja.y + (EstadoPartida.huidaActiva ? 192f : 136f), 280f, 44f), "Menú principal", boton)) juego.VolverAlMenu();
-        GUI.backgroundColor = Color.white;
+        if (pausaArt == null)
+        {
+            var caja = CajaCentral(ancho, alto, 420f, 280f);
+            GUI.Label(new Rect(caja.x, caja.y + 16f, caja.width, 40f), "Pausa", titulo);
+            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
+            if (GUI.Button(new Rect(caja.x + 70f, caja.y + 80f, 280f, 44f), "Continuar", boton)) juego.CerrarPanel();
+            GUI.backgroundColor = new Color(0.16f, 0.22f, 0.36f);
+            if (EstadoPartida.huidaActiva && GUI.Button(new Rect(caja.x + 70f, caja.y + 136f, 280f, 44f), "Reintentar huida", boton)) juego.Reintentar();
+            if (GUI.Button(new Rect(caja.x + 70f, caja.y + (EstadoPartida.huidaActiva ? 192f : 136f), 280f, 44f), "Menú principal", boton)) juego.VolverAlMenu();
+            GUI.backgroundColor = Color.white;
+            return;
+        }
+
+        Velo(ancho, alto, 0.45f);
+        var puesta = Encajar(pausaArt, new Rect(ancho * 0.5f - 180f, alto * 0.5f - 200f, 360f, 360f));
+        GUI.DrawTexture(puesta, pausaArt, ScaleMode.StretchToFill, true);
+        if (GUI.Button(Trozo(puesta, pausaArt, 16f, 40f, 166f, 28f), "", vacio)) juego.CerrarPanel();
+        if (GUI.Button(Trozo(puesta, pausaArt, 16f, 156f, 166f, 26f), "", vacio)) juego.VolverAlMenu();
+        if (EstadoPartida.huidaActiva)
+        {
+            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
+            if (GUI.Button(new Rect(puesta.x, puesta.yMax + 8f, puesta.width, 40f), "Reintentar huida", boton)) juego.Reintentar();
+            GUI.backgroundColor = Color.white;
+        }
     }
 
     void Muerte(DirectorCampus juego, float ancho, float alto)
@@ -318,30 +433,79 @@ public class InterfazCampus : MonoBehaviour
 
     void Fin(DirectorCampus juego, float ancho, float alto)
     {
-        var caja = CajaCentral(ancho, alto, 680f, 460f);
         bool cruzo = EstadoPartida.pisoCruzado;
-        GUI.Label(new Rect(caja.x, caja.y + 12f, caja.width, 40f), cruzo ? "Cruzaste el piso que no existe" : "El piso sigue cerrado", titulo);
-        GUI.Label(new Rect(caja.x + 28f, caja.y + 64f, caja.width - 56f, 250f),
-            (cruzo
-                ? "El círculo del centro te deja pasar. Ese piso no tiene el color de la universidad: es el lugar del Proyecto 07, y ahí se ven los futuros que tus decisiones fueron abriendo.\n\n"
-                : "Llegaste a la zona verde de las escaleras. El ascensor sigue sin un piso 7.\n\n") +
-            "Ingeniería de Sistemas: " + EstadoPartida.sistemas + "\n" +
-            "Medicina: " + EstadoPartida.medicina + "\n" +
-            "Tercera: " + EstadoPartida.NombreTercera + "\n\n" +
-            EstadoPartida.Rumbo() + "\n\nPIXEL404\nKathlen Escalante, Nazareth Padilla, José Mamani y Dilan Paco.\nUNIFRANZ",
-            cuerpo);
-        GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-        if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 120f, caja.yMax - 64f, 240f, 44f), "Volver al menú", boton))
+        string resumen = (cruzo
+                ? "Cruzaste el círculo del centro. Ese piso es el Proyecto 07.\n\n"
+                : "El ascensor sigue sin un piso 7.\n\n") +
+            "Sistemas: " + EstadoPartida.sistemas + "    Medicina: " + EstadoPartida.medicina + "\n" +
+            "Tercera: " + EstadoPartida.NombreTercera + "\n" +
+            EstadoPartida.Rumbo();
+
+        if (resultadosArt == null)
+        {
+            var caja = CajaCentral(ancho, alto, 680f, 460f);
+            GUI.Label(new Rect(caja.x, caja.y + 12f, caja.width, 40f), cruzo ? "Cruzaste el piso que no existe" : "El piso sigue cerrado", titulo);
+            GUI.Label(new Rect(caja.x + 28f, caja.y + 64f, caja.width - 56f, 250f), resumen + "\n\nPIXEL404\nKathlen Escalante, Nazareth Padilla, José Mamani y Dilan Paco.\nUNIFRANZ", cuerpo);
+            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
+            if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 120f, caja.yMax - 64f, 240f, 44f), "Volver al menú", boton))
+                juego.VolverAlMenu();
+            GUI.backgroundColor = Color.white;
+            return;
+        }
+
+        Velo(ancho, alto, 0.5f);
+        float altoCarreras = 0f;
+        if (carrerasArt != null)
+        {
+            var facultades = Encajar(carrerasArt, new Rect(ancho * 0.5f - 280f, 8f, 560f, 200f));
+            GUI.DrawTexture(facultades, carrerasArt, ScaleMode.StretchToFill, true);
+            altoCarreras = facultades.yMax;
+        }
+        var puesta = Encajar(resultadosArt, new Rect(ancho * 0.5f - 300f, altoCarreras + 8f, 600f, alto - altoCarreras - 16f));
+        GUI.DrawTexture(puesta, resultadosArt, ScaleMode.StretchToFill, true);
+        var datos = new Rect(puesta.x + puesta.width * 0.08f, puesta.y + puesta.height * 0.28f, puesta.width * 0.62f, puesta.height * 0.42f);
+        Relleno(datos, new Color(0.03f, 0.04f, 0.1f, 0.88f));
+        GUI.Label(datos, resumen, cuerpo);
+        if (GUI.Button(Trozo(puesta, resultadosArt, 70f, 150f, 180f, 32f), "", vacio))
             juego.VolverAlMenu();
-        GUI.backgroundColor = Color.white;
+    }
+
+    Rect Encajar(Texture2D tex, Rect zona)
+    {
+        float escala = Mathf.Min(zona.width / tex.width, zona.height / tex.height);
+        float w = tex.width * escala;
+        float h = tex.height * escala;
+        return new Rect(zona.x + (zona.width - w) * 0.5f, zona.y + (zona.height - h) * 0.5f, w, h);
+    }
+
+    Rect Trozo(Rect puesta, Texture2D tex, float px, float py, float pw, float ph)
+    {
+        return new Rect(
+            puesta.x + px / tex.width * puesta.width,
+            puesta.y + py / tex.height * puesta.height,
+            pw / tex.width * puesta.width,
+            ph / tex.height * puesta.height);
     }
 
     Rect CajaCentral(float ancho, float alto, float w, float h)
     {
         var caja = new Rect(ancho * 0.5f - w * 0.5f, alto * 0.5f - h * 0.5f, w, h);
-        Relleno(caja, new Color(0.07f, 0.09f, 0.16f, 0.94f));
-        Borde(caja, new Color(0.95f, 0.48f, 0.12f));
+        PintarCaja(caja);
         return caja;
+    }
+
+    void PintarCaja(Rect caja)
+    {
+        if (dialogoArt != null)
+        {
+            GUI.DrawTexture(caja, dialogoArt, ScaleMode.StretchToFill, true);
+            Relleno(new Rect(caja.x + 18f, caja.y + 28f, caja.width - 36f, caja.height - 46f), new Color(0.03f, 0.04f, 0.1f, 0.72f));
+        }
+        else
+        {
+            Relleno(caja, new Color(0.07f, 0.09f, 0.16f, 0.94f));
+            Borde(caja, new Color(0.95f, 0.48f, 0.12f));
+        }
     }
 
     void Velo(float ancho, float alto, float alfa)

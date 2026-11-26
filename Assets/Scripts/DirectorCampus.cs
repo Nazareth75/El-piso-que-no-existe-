@@ -400,7 +400,7 @@ public class DirectorCampus : MonoBehaviour
             return;
         }
 
-        if (!dentro && !EstadoPartida.huidaActiva && TieneInterior(id))
+        if (!dentro && !EstadoPartida.huidaActiva && !EstadoPartida.desperto && TieneInterior(id))
         {
             EntrarSala(id);
             return;
@@ -411,7 +411,7 @@ public class DirectorCampus : MonoBehaviour
             case "entrada":
                 EstadoPartida.entrada = true;
                 if (puertaEntrada != null) puertaEntrada.enabled = false;
-                Decir("ENTRADA", "La estudiante te recibe.\n\nBienvenida. Te muestro la universidad: recepción está al frente, ahí pides información. Siguiendo el pasillo están admisiones, la clínica odontológica y gestión financiera. Del otro lado quedan el auditorio, servicios estudiantiles, la cafetería y la game room. Al fondo están el ascensor y las escaleras.", "entrada");
+                Decir("ENTRADA", "La estudiante te recibe.\n\nTe muestro la universidad: recepción está al frente, ahí pides información. Siguiendo el pasillo están admisiones, la clínica odontológica y gestión financiera. Del otro lado quedan el auditorio, servicios estudiantiles, la cafetería y la game room. Al fondo están el ascensor y las escaleras.", "entrada");
                 break;
             case "recepcion":
                 EstadoPartida.entrada = true;
@@ -505,6 +505,12 @@ public class DirectorCampus : MonoBehaviour
                     : "La cafetería sirve durante el día. Forma parte del recorrido.", "cafeteria");
                 break;
             case "game":
+                if (EstadoPartida.desperto)
+                {
+                    Decir("GAME ROOM", "Las máquinas están apagadas. No hay nadie.", "game_room");
+                    break;
+                }
+
                 if (EstadoPartida.gameRoom)
                 {
                     Decir("GAME ROOM", "Ya participaste. Esto no cambia tu carrera.", "game_room");
@@ -1016,12 +1022,12 @@ public class DirectorCampus : MonoBehaviour
         Punto("gestion", "Gestión financiera", new Vector2(23.44f, 12.6f), 2.6f);
         Punto("admisiones", "Admisiones", new Vector2(32.66f, 11.73f), 2.6f);
         Punto("hall", "Hall", new Vector2(32.5f, 7.05f), 3.4f);
-        Punto("huella", "Control de huella", new Vector2(21.15f, 15.24f), 1.25f);
-        Punto("huella", "Control de huella", new Vector2(21.15f, 12.87f), 1.25f);
-        Punto("huella", "Control de huella", new Vector2(21.15f, 9.8f), 1.25f);
-        Punto("huella", "Control de huella", new Vector2(21.15f, 6.65f), 1.25f);
-        Punto("huella", "Control de huella", new Vector2(21.15f, 4.57f), 1.25f);
-        Punto("ascensor", "Ascensor", Celda(15, 2), 1.5f);
+        Punto("huella", "Control de huella", new Vector2(21.15f, 15.24f), 1.8f);
+        Punto("huella", "Control de huella", new Vector2(21.15f, 12.87f), 1.8f);
+        Punto("huella", "Control de huella", new Vector2(21.15f, 9.8f), 1.8f);
+        Punto("huella", "Control de huella", new Vector2(21.15f, 6.65f), 1.8f);
+        Punto("huella", "Control de huella", new Vector2(21.15f, 4.57f), 1.8f);
+        Punto("ascensor", "Ascensor", Celda(15, 2), 2.2f);
         Punto("servicios", "Servicios estudiantiles", Celda(12, 3), 1.35f);
         Punto("auditorio", "Auditorio", Celda(4, 4), 1.5f);
         Punto("cafeteria", "Cafetería", Celda(12, 16), 1.4f);
@@ -1322,9 +1328,9 @@ public class DirectorCampus : MonoBehaviour
         portalPiso = new Vector2(salaAncho * 0.5f, salaAlto * 0.52f);
         if (jugador != null) jugador.transform.localScale = new Vector3(1.35f, 1.35f, 1f);
         PonerJugador(new Vector2(2.6f, salaAlto * 0.48f));
-        PonerBot("robot", new Vector2(salaAncho * 0.32f, salaAlto * 0.72f), new Vector2(salaAncho * 0.46f, salaAlto * 0.72f));
-        PonerBot("criatura", new Vector2(salaAncho * 0.24f, salaAlto * 0.36f), new Vector2(salaAncho * 0.4f, salaAlto * 0.36f));
-        PonerBot("monstruo", new Vector2(salaAncho * 0.72f, salaAlto * 0.58f), new Vector2(salaAncho * 0.84f, salaAlto * 0.4f));
+        PonerBot("robot", new Vector2(7.9f, 15.4f), new Vector2(12.1f, 15.4f));
+        PonerBot("criatura", new Vector2(10.0f, 11.6f), new Vector2(14.2f, 11.6f));
+        PonerBot("monstruo", new Vector2(14.2f, 8.1f), new Vector2(18.3f, 8.1f));
         if (camara != null) camara.backgroundColor = new Color(0.05f, 0.02f, 0.1f);
     }
 
