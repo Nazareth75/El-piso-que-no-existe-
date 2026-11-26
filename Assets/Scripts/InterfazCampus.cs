@@ -195,7 +195,7 @@ public class InterfazCampus : MonoBehaviour
                 float x = pantalla.x / escala;
                 float y = (Screen.height - pantalla.y) / escala;
                 bool gradasPiso = cerca.id == "gradasMez" || cerca.id == "gradasPiso";
-                float anchoAviso = cerca.id == "gradas" ? 460f : gradasPiso ? 280f : 240f;
+                float anchoAviso = cerca.id == "gradas" ? 460f : gradasPiso ? 280f : 340f;
                 float altoAviso = gradasPiso ? 58f : 44f;
                 var flotante = new Rect(x - anchoAviso * 0.5f, y - altoAviso * 0.5f, anchoAviso, altoAviso);
                 Relleno(flotante, new Color(0.06f, 0.08f, 0.14f, 0.94f));

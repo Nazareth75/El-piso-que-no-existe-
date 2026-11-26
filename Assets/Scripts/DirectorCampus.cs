@@ -237,14 +237,23 @@ public class DirectorCampus : MonoBehaviour
             if (salaId == "mezanine")
             {
                 PuntoCampus cerca = null;
-                float limite = 2.6f;
+                float limite = 999f;
                 for (int i = 0; i < GradasMezanine.Length; i++)
                 {
                     float distancia = Vector2.Distance(aqui, GradasMezanine[i]);
-                    if (distancia > limite) continue;
+                    if (distancia > 1.4f || distancia >= limite) continue;
                     limite = distancia;
-                    cerca = new PuntoCampus { id = "gradasMez", nombre = "gradas", posicion = GradasMezanine[i], radio = 2.6f, lado = i };
+                    cerca = new PuntoCampus { id = "gradasMez", nombre = "gradas", posicion = GradasMezanine[i], radio = 1.4f, lado = i };
                 }
+
+                foreach (var punto in puntosPiso)
+                {
+                    float distancia = Vector2.Distance(aqui, punto.posicion);
+                    if (distancia > punto.radio || distancia >= limite) continue;
+                    limite = distancia;
+                    cerca = punto;
+                }
+
                 return cerca;
             }
 
@@ -708,6 +717,51 @@ public class DirectorCampus : MonoBehaviour
                 Decir("BAÑOS", EstadoPartida.desperto
                     ? "Los baños de este piso están vacíos."
                     : "Baños de este piso. Forman parte del recorrido.", "");
+                break;
+            case "oficinas":
+                Decir("OFICINAS DOCENTES", EstadoPartida.desperto
+                    ? "Las oficinas docentes están cerradas. No quedó ningún profesor."
+                    : "Oficinas docentes. Aquí atienden los profesores. Esta es la sala de docentes de este piso.", "");
+                break;
+            case "cajas":
+                Decir("CAJAS", EstadoPartida.desperto
+                    ? "Cajas está cerrado. No hay quién cobre un trámite."
+                    : "Cajas. Aquí se pagan la colegiatura y los trámites del día.", "");
+                break;
+            case "direccion":
+                Decir("DIRECCIÓN DE CARRERA", EstadoPartida.desperto
+                    ? "Dirección de carrera quedó vacía. No hay quién oriente."
+                    : "Dirección de carrera. Aquí te orientan sobre tu carrera y los trámites académicos.", "");
+                break;
+            case "postgrado":
+                Decir("POSTGRADO", EstadoPartida.desperto
+                    ? "Postgrado está apagado. No quedó nadie en las mesas."
+                    : "Postgrado. Aquí están los programas de especialización y maestría.", "");
+                break;
+            case "facsalud":
+                Decir("CIENCIAS DE LA SALUD", EstadoPartida.desperto
+                    ? "La Facultad de Ciencias de la Salud está vacía."
+                    : "Facultad de Ciencias de la Salud. Aquí estudian las carreras de salud.", "");
+                break;
+            case "facjuridica":
+                Decir("CIENCIAS JURÍDICAS", EstadoPartida.desperto
+                    ? "La Facultad de Ciencias Jurídicas y Sociales está vacía."
+                    : "Facultad de Ciencias Jurídicas y Sociales. Aquí están las carreras de derecho y sociales.", "");
+                break;
+            case "faceconomia":
+                Decir("CIENCIAS ECONÓMICAS", EstadoPartida.desperto
+                    ? "La Facultad de Ciencias Económicas y Empresariales está vacía."
+                    : "Facultad de Ciencias Económicas y Empresariales. Aquí están las carreras de economía y empresa.", "");
+                break;
+            case "facdiseno":
+                Decir("DISEÑO Y CROSSMEDIA", EstadoPartida.desperto
+                    ? "La Facultad de Diseño y Tecnologías Crossmedia está vacía."
+                    : "Facultad de Diseño y Tecnologías Crossmedia. Aquí están las carreras de diseño.", "");
+                break;
+            case "facinge":
+                Decir("INGENIERÍA", EstadoPartida.desperto
+                    ? "La Facultad de Ingeniería está vacía."
+                    : "Facultad de Ingeniería. Aquí están las carreras de ingeniería.", "");
                 break;
         }
     }
@@ -1469,8 +1523,8 @@ public class DirectorCampus : MonoBehaviour
 
     static readonly Vector2[] GradasMezanine =
     {
-        new Vector2(10.94f, 14.15f),
-        new Vector2(27.19f, 14.15f)
+        new Vector2(10.94f, 15.5f),
+        new Vector2(27.19f, 15.5f)
     };
 
     void SubirMezanine(int lado = 0)
@@ -1503,7 +1557,38 @@ public class DirectorCampus : MonoBehaviour
         Borde(20f, 0.4f, 40f, 0.8f);
         if (jugador != null) jugador.transform.localScale = Vector3.one;
         if (lado < 0 || lado >= GradasMezanine.Length) lado = 0;
+        PrepararMezanine();
         PonerJugador(GradasMezanine[lado]);
+    }
+
+    void PrepararMezanine()
+    {
+        puntosPiso.Clear();
+        if (interiorGo == null) return;
+
+        PuntoPiso("ascensor", "Ascensor", new Vector2(23.05f, 15.05f), 1.5f);
+        PuntoPiso("arca", "ARCA", new Vector2(18.55f, 14.9f), 1.45f);
+        PuntoPiso("oficinas", "Oficinas docentes", new Vector2(15.5f, 13.15f), 1.5f);
+        PuntoPiso("cajas", "Cajas", new Vector2(26.15f, 12.75f), 1.4f);
+        PuntoPiso("direccion", "Dirección de carrera", new Vector2(20.9f, 6.85f), 1.2f);
+        PuntoPiso("postgrado", "Postgrado", new Vector2(34.4f, 15.6f), 1.45f);
+        PuntoPiso("facsalud", "Ciencias de la Salud", new Vector2(6.33f, 5.35f), 1.15f);
+        PuntoPiso("facjuridica", "Ciencias Jurídicas", new Vector2(13.2f, 5.35f), 1.15f);
+        PuntoPiso("faceconomia", "Ciencias Económicas", new Vector2(20.9f, 4.75f), 1.05f);
+        PuntoPiso("facdiseno", "Diseño y Crossmedia", new Vector2(28.05f, 5.35f), 1.15f);
+        PuntoPiso("facinge", "Ingeniería", new Vector2(35.23f, 5.35f), 1.15f);
+
+        Habitante("estudiante_caminando", new Vector2(6.2f, 15.4f));
+        Habitante("admisiones", new Vector2(18.55f, 16.25f));
+        Habitante("estudiante_mujer", new Vector2(15.2f, 11.35f));
+        Habitante("gestion_financiera", new Vector2(26.15f, 11.4f));
+        Habitante("recepcionista", new Vector2(18.4f, 6.85f));
+        Habitante("estudiante_sentado", new Vector2(36.4f, 16.3f));
+        Habitante("odontologa", new Vector2(6.33f, 3.3f));
+        Habitante("servicios_estudiantiles", new Vector2(13.2f, 3.3f));
+        Habitante("expositor", new Vector2(20.9f, 3.3f));
+        Habitante("cafeteria", new Vector2(28.05f, 3.3f));
+        Habitante("game_room", new Vector2(35.23f, 3.3f));
     }
 
     void SubirDesdeMezanine(int lado)
