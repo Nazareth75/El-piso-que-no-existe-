@@ -1213,8 +1213,8 @@ public class DirectorCampus : MonoBehaviour
         CrearNpc("gestion_financiera", new Vector2(23.44f, 12.6f), false);
         CrearNpc("admisiones", new Vector2(32.66f, 11.73f), false);
         CrearNpc("servicios_estudiantiles", Celda(12, 3), false);
-        CrearNpc("cafeteria", Celda(12, 16), false);
-        CrearNpc("game_room", Celda(4, 16), false);
+        CrearNpc("cafeteria", new Vector2(11.9f, 5.2f), false);
+        CrearNpc("game_room", new Vector2(4.4f, 5.2f), false);
         CrearNpc("estudiante_sentado", Celda(11, 13), false);
         CrearNpc("estudiante_mujer", new Vector2(32.5f, 7.05f), false);
         CrearNpc("expositor", Celda(4, 4), true, Celda(3, 5), Celda(6, 5), Celda(6, 2), Celda(3, 2));
@@ -1253,8 +1253,8 @@ public class DirectorCampus : MonoBehaviour
         Punto("gradas", "Subir", new Vector2(14.38f, 16.1f), 1.7f);
         Punto("servicios", "Servicios estudiantiles", Celda(12, 3), 1.35f);
         Punto("auditorio", "Auditorio", new Vector2(6.21f, 15.39f), 1.8f);
-        Punto("cafeteria", "Cafetería", Celda(12, 16), 1.4f);
-        Punto("game", "Game room", Celda(4, 16), 1.45f);
+        Punto("cafeteria", "Entrar a la cafetería", new Vector2(11.9f, 7.2f), 1.7f);
+        Punto("game", "Entrar a la game room", new Vector2(4.4f, 7.2f), 1.7f);
         Punto("escaleras", "Escaleras y baños", Celda(4, 3), 1.6f);
     }
 
