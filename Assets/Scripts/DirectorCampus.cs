@@ -24,6 +24,7 @@ public class PuntoCampus
     public string nombre;
     public Vector2 posicion;
     public float radio = 1.35f;
+    public int lado;
 }
 
 public class DirectorCampus : MonoBehaviour
@@ -75,8 +76,18 @@ public class DirectorCampus : MonoBehaviour
     float gritoHasta;
     KeyCode teclaJuego = KeyCode.UpArrow;
     bool avisoPisoX;
+    int pisoNumero;
+    bool aparecerEnPuerta;
+    bool pidioPlantaBaja;
+    bool desmayando;
+    public float negro;
+    public bool BotonXListo { get; private set; }
+    readonly List<Vector2> gradasPiso = new List<Vector2>();
+    static readonly Vector2 PuertaBibliotecaPiso = new Vector2(18.46f, 11.55f);
+    static readonly Vector2 SpawnBiblioteca = new Vector2(19.06f, 3.2f);
+    static readonly Vector2 SalidaBiblioteca = new Vector2(19.06f, 2.23f);
 
-    public bool bloqueado => panel != PanelCampus.Ninguno;
+    public bool bloqueado => panel != PanelCampus.Ninguno || desmayando;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Asegurar()
@@ -133,7 +144,7 @@ public class DirectorCampus : MonoBehaviour
     {
         if (jugador == null) return;
 
-        if (dentro && salaId != "pisox" && salaId != "mezanine" && jugando && panel == PanelCampus.Ninguno && jugador.transform.position.y < 1.7f && Time.time > puedeSalir)
+        if (dentro && salaId != "pisox" && salaId != "mezanine" && salaId != "piso" && salaId != "biblioteca" && jugando && panel == PanelCampus.Ninguno && jugador.transform.position.y < 1.7f && Time.time > puedeSalir)
             SalirSala();
 
         if (jugando && panel == PanelCampus.Ninguno && Input.GetKeyDown(KeyCode.E))
@@ -141,7 +152,8 @@ public class DirectorCampus : MonoBehaviour
             var cerca = Cercano();
             if (cerca != null)
             {
-                if (cerca.id == "gradasMez") SubirDesdeMezanine();
+                if (cerca.id == "gradasMez") SubirDesdeMezanine(cerca.lado);
+                else if (cerca.id == "gradasPiso") SubirPiso(cerca.lado);
                 else Usar(cerca.id);
             }
         }
@@ -151,6 +163,8 @@ public class DirectorCampus : MonoBehaviour
             var cerca = Cercano();
             if (cerca != null && cerca.id == "gradasMez")
                 SalirSala();
+            else if (cerca != null && cerca.id == "gradasPiso")
+                BajarPiso(cerca.lado);
         }
 
         if (jugando && (panel == PanelCampus.Ninguno || panel == PanelCampus.Pausa) && Input.GetKeyDown(KeyCode.Escape))
@@ -221,10 +235,45 @@ public class DirectorCampus : MonoBehaviour
 
             if (salaId == "mezanine")
             {
-                var grada = new Vector2(10.94f, 14.15f);
-                if (Vector2.Distance(aqui, grada) <= 2.4f)
-                    return new PuntoCampus { id = "gradasMez", nombre = "gradas", posicion = grada, radio = 2.4f };
+                PuntoCampus cerca = null;
+                float limite = 2.6f;
+                for (int i = 0; i < GradasMezanine.Length; i++)
+                {
+                    float distancia = Vector2.Distance(aqui, GradasMezanine[i]);
+                    if (distancia > limite) continue;
+                    limite = distancia;
+                    cerca = new PuntoCampus { id = "gradasMez", nombre = "gradas", posicion = GradasMezanine[i], radio = 2.6f, lado = i };
+                }
+                return cerca;
+            }
+
+            if (salaId == "biblioteca")
+            {
+                if (Vector2.Distance(aqui, SalidaBiblioteca) <= 1.7f)
+                    return new PuntoCampus { id = "salirBiblioteca", nombre = "Salir", posicion = SalidaBiblioteca, radio = 1.7f };
                 return null;
+            }
+
+            if (salaId == "piso")
+            {
+                PuntoCampus cerca = null;
+                float limite = 3.1f;
+                for (int i = 0; i < gradasPiso.Count; i++)
+                {
+                    float distancia = Vector2.Distance(aqui, gradasPiso[i]);
+                    if (distancia > limite) continue;
+                    limite = distancia;
+                    cerca = new PuntoCampus { id = "gradasPiso", nombre = "gradas", posicion = gradasPiso[i], radio = 3.1f, lado = i };
+                }
+
+                if (pisoNumero == 5)
+                {
+                    float distanciaPuerta = Vector2.Distance(aqui, PuertaBibliotecaPiso);
+                    if (distanciaPuerta <= 1.8f && (cerca == null || distanciaPuerta < limite))
+                        cerca = new PuntoCampus { id = "biblioteca", nombre = "Biblioteca", posicion = PuertaBibliotecaPiso, radio = 1.8f };
+                }
+
+                return cerca;
             }
 
             float alcance = salaId == "admisiones" ? 2.4f : 1.45f;
@@ -265,6 +314,7 @@ public class DirectorCampus : MonoBehaviour
         estamina = 100f;
         aviso = "";
         grito = "";
+        ReiniciarDesmayo();
         AplicarMundo();
         panel = PanelCampus.Intro;
         jugando = false;
@@ -316,6 +366,7 @@ public class DirectorCampus : MonoBehaviour
     {
         EstadoPartida.Reiniciar();
         estamina = 100f;
+        ReiniciarDesmayo();
         AplicarMundo();
         panel = PanelCampus.Menu;
         jugando = false;
@@ -371,7 +422,51 @@ public class DirectorCampus : MonoBehaviour
 
     public void ElegirPiso(string piso)
     {
-        if (!EstadoPartida.desperto) return;
+        if (piso == "X")
+        {
+            aviso = "";
+            panel = PanelCampus.Ninguno;
+            EntrarPisoX();
+            return;
+        }
+
+        if (piso == "PB")
+        {
+            aviso = "";
+            panel = PanelCampus.Ninguno;
+            if (dentro) SalirSala();
+            else aviso = "Ya estás en planta baja.";
+            return;
+        }
+
+        if (piso == "M")
+        {
+            aviso = "";
+            panel = PanelCampus.Ninguno;
+            SubirMezanine();
+            return;
+        }
+
+        if (piso == "1")
+        {
+            aviso = "El piso 1 no llegó con los planos. Sigue en orden: 2, 3, 4 y 5.";
+            return;
+        }
+
+        if (piso == "2" || piso == "3" || piso == "4" || piso == "5")
+        {
+            aviso = "";
+            panel = PanelCampus.Ninguno;
+            EntrarPisoNumero(int.Parse(piso));
+            return;
+        }
+
+        if (!EstadoPartida.desperto)
+        {
+            aviso = "Esos botones se usan cuando el campus ya está vacío.";
+            return;
+        }
+
         if (piso == "7")
         {
             if (!EstadoPartida.pista)
@@ -422,6 +517,19 @@ public class DirectorCampus : MonoBehaviour
         if (id == "gradas")
         {
             SubirMezanine();
+            return;
+        }
+
+        if (id == "biblioteca")
+        {
+            EntrarBiblioteca();
+            return;
+        }
+
+        if (id == "salirBiblioteca")
+        {
+            aparecerEnPuerta = true;
+            EntrarPisoNumero(5);
             return;
         }
 
@@ -503,26 +611,15 @@ public class DirectorCampus : MonoBehaviour
                     : "Huella del primer día. Las puertas se abren. El ascensor está al fondo.", "control_huella");
                 break;
             case "ascensor":
-                if (!EstadoPartida.Conoce)
+                if (pidioPlantaBaja && !BotonXListo && !desmayando)
                 {
-                    Decir("ASCENSOR", "Primero conoce la universidad. La estudiante te guía en la entrada, en recepción y en el hall.", "primera_vez");
+                    StartCoroutine(DesmayoEnAscensor());
                     break;
                 }
 
-                if (!EstadoPartida.huella)
-                {
-                    Decir("ASCENSOR", "El ascensor está del otro lado del control de huella.", "primera_vez");
-                    break;
-                }
-
-                if (!EstadoPartida.desperto)
-                {
-                    Decir("ASCENSOR", "Ves el ascensor. Están la planta baja, el mezanine y los pisos 1 al 5.\n\nYa conoces la universidad. Al cerrar esto, el día termina.", "primera_vez");
-                    cerrarDespierta = true;
-                    break;
-                }
-
-                aviso = EstadoPartida.sistemasListo ? "PISO X está abierto. Puedes entrar." : "";
+                aviso = BotonXListo
+                    ? "Pulsa X."
+                    : EstadoPartida.desperto && EstadoPartida.sistemasListo ? "PISO X está abierto. Puedes entrar." : "";
                 avisoPisoX = EstadoPartida.sistemasListo;
                 AbrirAscensor();
                 panel = PanelCampus.Ascensor;
@@ -1061,7 +1158,7 @@ public class DirectorCampus : MonoBehaviour
         Punto("ascensor", "Ascensor", Celda(15, 2), 1.45f);
         Punto("gradas", "Subir", new Vector2(14.38f, 16.1f), 1.7f);
         Punto("servicios", "Servicios estudiantiles", Celda(12, 3), 1.35f);
-        Punto("auditorio", "Auditorio", Celda(4, 4), 1.5f);
+        Punto("auditorio", "Auditorio", new Vector2(6.21f, 15.39f), 1.8f);
         Punto("cafeteria", "Cafetería", Celda(12, 16), 1.4f);
         Punto("game", "Game room", Celda(4, 16), 1.45f);
         Punto("escaleras", "Escaleras y baños", Celda(4, 3), 1.6f);
@@ -1330,10 +1427,18 @@ public class DirectorCampus : MonoBehaviour
             camara.backgroundColor = vacio ? new Color(0.07f, 0.03f, 0.12f) : new Color(0.04f, 0.1f, 0.07f);
     }
 
-    void SubirMezanine()
+    static readonly Vector2[] GradasMezanine =
+    {
+        new Vector2(10.94f, 14.15f),
+        new Vector2(27.19f, 14.15f)
+    };
+
+    void SubirMezanine(int lado = 0)
     {
         var tex = RecursosCampus.Textura("Campus/mezanine.jpg");
         if (tex == null) return;
+        SoltarInterior();
+        pisoNumero = 0;
         retornoSala = new Vector2(14.38f, 16.1f);
         dentro = true;
         salaId = "mezanine";
@@ -1357,12 +1462,212 @@ public class DirectorCampus : MonoBehaviour
         Borde(20f, 19.6f, 40f, 0.8f);
         Borde(20f, 0.4f, 40f, 0.8f);
         if (jugador != null) jugador.transform.localScale = Vector3.one;
-        PonerJugador(new Vector2(10.94f, 14.15f));
+        if (lado < 0 || lado >= GradasMezanine.Length) lado = 0;
+        PonerJugador(GradasMezanine[lado]);
     }
 
-    void SubirDesdeMezanine()
+    void SubirDesdeMezanine(int lado)
     {
-        Decir("GRADAS", "Hacia arriba todavía no hay otro piso dibujado.", "");
+        EntrarPisoNumero(2, lado);
+    }
+
+    void SubirPiso(int lado)
+    {
+        if (pisoNumero >= 5)
+        {
+            Decir("GRADAS", "Este es el último piso. El orden es 2, 3, 4 y 5.", "");
+            return;
+        }
+
+        EntrarPisoNumero(pisoNumero + 1, lado);
+    }
+
+    void BajarPiso(int lado)
+    {
+        if (pisoNumero <= 2) SubirMezanine(lado);
+        else EntrarPisoNumero(pisoNumero - 1, lado);
+    }
+
+    void EntrarPisoNumero(int n, int lado = 0)
+    {
+        var tex = RecursosCampus.Textura("Pisos/piso" + n + ".png");
+        if (tex == null) return;
+        SoltarInterior();
+        retornoSala = Celda(15, 2);
+        dentro = true;
+        salaId = "piso";
+        pisoNumero = n;
+        puedeSalir = Time.time + 0.6f;
+        if (presencia != null) presencia.persigue = false;
+        if (mapaGo != null) mapaGo.SetActive(false);
+        if (murosGo != null) murosGo.SetActive(false);
+        if (npcsGo != null) npcsGo.SetActive(false);
+        if (zonaVerde != null) zonaVerde.enabled = false;
+
+        salaAncho = 40f;
+        salaAlto = 40f * tex.height / tex.width;
+        interiorGo = new GameObject("Piso" + n);
+        var dibujo = interiorGo.AddComponent<SpriteRenderer>();
+        dibujo.sprite = RecursosCampus.ComoSprite(tex, tex.width / salaAncho, new Vector2(0.5f, 0.5f));
+        dibujo.sortingOrder = -20;
+        interiorGo.transform.position = new Vector3(salaAncho * 0.5f, salaAlto * 0.5f, 0f);
+        marcoGo = new GameObject("Marco");
+        CargarMurosPiso(n);
+        Borde(0.4f, salaAlto * 0.5f, 0.8f, salaAlto);
+        Borde(salaAncho - 0.4f, salaAlto * 0.5f, 0.8f, salaAlto);
+        Borde(salaAncho * 0.5f, salaAlto - 0.4f, salaAncho, 0.8f);
+        Borde(salaAncho * 0.5f, 0.4f, salaAncho, 0.8f);
+        if (n == 5) PonerPuertaBiblioteca();
+        if (jugador != null) jugador.transform.localScale = Vector3.one;
+        if (aparecerEnPuerta && n == 5)
+        {
+            aparecerEnPuerta = false;
+            PonerJugador(PuertaBibliotecaPiso);
+        }
+        else if (gradasPiso.Count == 0) PonerJugador(new Vector2(salaAncho * 0.5f, salaAlto * 0.5f));
+        else
+        {
+            int indice = Mathf.Clamp(lado, 0, gradasPiso.Count - 1);
+            PonerJugador(gradasPiso[indice]);
+        }
+    }
+
+    void PonerPuertaBiblioteca()
+    {
+        var tex = RecursosCampus.Textura("Pisos/puerta_biblioteca.png");
+        if (tex == null || interiorGo == null) return;
+        var go = new GameObject("PuertaBiblioteca");
+        go.transform.SetParent(interiorGo.transform);
+        go.transform.position = new Vector3(18.46f, 10.85f, 0f);
+        var dibujo = go.AddComponent<SpriteRenderer>();
+        dibujo.sprite = RecursosCampus.ComoSprite(tex, tex.width / 3.5f, new Vector2(0.5f, 0.5f));
+        dibujo.sortingOrder = 180;
+    }
+
+    void EntrarBiblioteca()
+    {
+        var tex = RecursosCampus.Textura("Pisos/biblioteca.jpg");
+        if (tex == null) return;
+        SoltarInterior();
+        dentro = true;
+        salaId = "biblioteca";
+        pisoNumero = 5;
+        puedeSalir = Time.time + 0.6f;
+        if (presencia != null) presencia.persigue = false;
+        if (mapaGo != null) mapaGo.SetActive(false);
+        if (murosGo != null) murosGo.SetActive(false);
+        if (npcsGo != null) npcsGo.SetActive(false);
+        if (zonaVerde != null) zonaVerde.enabled = false;
+
+        salaAncho = 40f;
+        salaAlto = 20f;
+        interiorGo = new GameObject("Biblioteca");
+        var dibujo = interiorGo.AddComponent<SpriteRenderer>();
+        dibujo.sprite = RecursosCampus.ComoSprite(tex, 25.6f, new Vector2(0.5f, 0.5f));
+        dibujo.sortingOrder = -20;
+        interiorGo.transform.position = new Vector3(20f, 10f, 0f);
+        marcoGo = new GameObject("Marco");
+        Borde(0.4f, 10f, 0.8f, 20f);
+        Borde(39.6f, 10f, 0.8f, 20f);
+        Borde(20f, 19.6f, 40f, 0.8f);
+        Borde(20f, 0.4f, 40f, 0.8f);
+        if (jugador != null) jugador.transform.localScale = Vector3.one;
+        PonerJugador(SpawnBiblioteca);
+        if (!pidioPlantaBaja)
+        {
+            pidioPlantaBaja = true;
+            Decir("BIBLIOTECA", "Vuelve a la planta baja por el ascensor.", "");
+        }
+    }
+
+    void ReiniciarDesmayo()
+    {
+        pidioPlantaBaja = false;
+        desmayando = false;
+        negro = 0f;
+        BotonXListo = false;
+    }
+
+    System.Collections.IEnumerator DesmayoEnAscensor()
+    {
+        desmayando = true;
+        panel = PanelCampus.Ninguno;
+        if (jugador != null) jugador.Detener();
+        float t = 0f;
+        while (t < 0.55f)
+        {
+            t += Time.deltaTime;
+            negro = Mathf.Clamp01(t / 0.55f);
+            yield return null;
+        }
+
+        negro = 1f;
+        yield return new WaitForSeconds(1.15f);
+        BotonXListo = true;
+        aviso = "Pulsa X.";
+        AbrirAscensor();
+        panel = PanelCampus.Ascensor;
+        t = 0f;
+        while (t < 0.85f)
+        {
+            t += Time.deltaTime;
+            negro = 1f - Mathf.Clamp01(t / 0.85f);
+            yield return null;
+        }
+
+        negro = 0f;
+        desmayando = false;
+    }
+
+    void CargarMurosPiso(int n)
+    {
+        gradasPiso.Clear();
+        string ruta = Path.Combine(Application.streamingAssetsPath, "Pisos/piso" + n + ".txt");
+        if (!File.Exists(ruta)) return;
+        var lineas = File.ReadAllLines(ruta);
+        if (lineas.Length < 2) return;
+        var medida = lineas[0].Split(' ');
+        float pixelesAncho = float.Parse(medida[0], System.Globalization.CultureInfo.InvariantCulture);
+        float pixelesAlto = float.Parse(medida[1], System.Globalization.CultureInfo.InvariantCulture);
+        var cultura = System.Globalization.CultureInfo.InvariantCulture;
+        for (int i = 1; i < lineas.Length; i++)
+        {
+            if (string.IsNullOrWhiteSpace(lineas[i])) continue;
+            var parte = lineas[i].Split(' ');
+            if (parte[0] == "stair" && parte.Length >= 3)
+            {
+                float ux = float.Parse(parte[1], cultura);
+                float uy = float.Parse(parte[2], cultura);
+                float wx = ux / 104f * salaAncho;
+                float wy = (uy + 54f) / 54f * salaAlto;
+                gradasPiso.Add(new Vector2(wx, wy));
+                continue;
+            }
+
+            if (parte.Length < 4) continue;
+            float x = float.Parse(parte[0], cultura);
+            float y = float.Parse(parte[1], cultura);
+            float w = float.Parse(parte[2], cultura);
+            float h = float.Parse(parte[3], cultura);
+            var muro = new GameObject("Muro");
+            muro.transform.SetParent(marcoGo.transform);
+            float cx = (x + w * 0.5f) / pixelesAncho * salaAncho;
+            float cy = (pixelesAlto - (y + h * 0.5f)) / pixelesAlto * salaAlto;
+            muro.transform.position = new Vector3(cx, cy, 0f);
+            var caja = muro.AddComponent<BoxCollider2D>();
+            caja.size = new Vector2(w / pixelesAncho * salaAncho, h / pixelesAlto * salaAlto);
+        }
+
+        gradasPiso.Sort((a, b) => a.x.CompareTo(b.x));
+    }
+
+    void SoltarInterior()
+    {
+        if (interiorGo != null) Destroy(interiorGo);
+        if (marcoGo != null) Destroy(marcoGo);
+        interiorGo = null;
+        marcoGo = null;
+        gradasPiso.Clear();
     }
 
     void EntrarPisoX()
@@ -1431,6 +1736,7 @@ public class DirectorCampus : MonoBehaviour
         if (!dentro) return;
         dentro = false;
         salaId = "";
+        pisoNumero = 0;
         if (jugador != null) jugador.transform.localScale = Vector3.one;
         if (interiorGo != null) Destroy(interiorGo);
         if (marcoGo != null) Destroy(marcoGo);

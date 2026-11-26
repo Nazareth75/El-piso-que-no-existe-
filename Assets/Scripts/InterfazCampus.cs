@@ -123,6 +123,16 @@ public class InterfazCampus : MonoBehaviour
         if (juego.jugando && juego.panel == PanelCampus.Ninguno)
             Prompt(juego, ancho, alto);
 
+        if (juego.negro > 0.01f)
+        {
+            Color previa = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, juego.negro);
+            GUI.DrawTexture(new Rect(0f, 0f, ancho, alto), blanco, ScaleMode.StretchToFill, true);
+            GUI.color = previa;
+            if (juego.negro > 0.85f && juego.panel == PanelCampus.Ninguno)
+                GUI.Label(new Rect(0f, alto * 0.45f, ancho, 48f), "Te desmayas.", titulo);
+        }
+
         if (juego.GritoVisible)
         {
             var caja = new Rect(ancho * 0.22f, alto * 0.16f, ancho * 0.56f, 52f);
@@ -172,7 +182,7 @@ public class InterfazCampus : MonoBehaviour
         if (cerca == null) return;
         string texto = cerca.id == "gradas"
             ? "E para subir por gradas al siguiente piso"
-            : cerca.id == "gradasMez"
+            : cerca.id == "gradasMez" || cerca.id == "gradasPiso"
                 ? "Q para bajar\nE para subir"
                 : "E   " + cerca.nombre;
         var camara = Camera.main;
@@ -184,7 +194,7 @@ public class InterfazCampus : MonoBehaviour
             {
                 float x = pantalla.x / escala;
                 float y = (Screen.height - pantalla.y) / escala;
-                bool gradasPiso = cerca.id == "gradasMez";
+                bool gradasPiso = cerca.id == "gradasMez" || cerca.id == "gradasPiso";
                 float anchoAviso = cerca.id == "gradas" ? 460f : gradasPiso ? 280f : 240f;
                 float altoAviso = gradasPiso ? 58f : 44f;
                 var flotante = new Rect(x - anchoAviso * 0.5f, y - altoAviso * 0.5f, anchoAviso, altoAviso);
@@ -374,18 +384,32 @@ public class InterfazCampus : MonoBehaviour
                 juego.ElegirPiso(pisos[i]);
         }
 
-        GUI.Label(new Rect(0f, y + 52f, ancho, 28f), "¿Cuál piso no está?", pequeño);
-        GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-        string[] extra = { "6", "7", "8" };
-        float ex = ancho * 0.5f - 96f;
-        for (int i = 0; i < extra.Length; i++)
+        float avisoY = y + 56f;
+        if (juego.BotonXListo)
         {
-            if (GUI.Button(new Rect(ex + i * 64f, y + 84f, 58f, 42f), extra[i], boton))
-                juego.ElegirPiso(extra[i]);
+            GUI.Label(new Rect(0f, y + 52f, ancho, 28f), "PISO X", pequeño);
+            GUI.backgroundColor = new Color(0.55f, 0.2f, 0.75f);
+            if (GUI.Button(new Rect(ancho * 0.5f - 29f, y + 84f, 58f, 42f), "X", boton))
+                juego.ElegirPiso("X");
+            avisoY = y + 136f;
+        }
+        else if (EstadoPartida.desperto)
+        {
+            GUI.Label(new Rect(0f, y + 52f, ancho, 28f), "¿Cuál piso no está?", pequeño);
+            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
+            string[] extra = { "6", "7", "8" };
+            float ex = ancho * 0.5f - 96f;
+            for (int i = 0; i < extra.Length; i++)
+            {
+                if (GUI.Button(new Rect(ex + i * 64f, y + 84f, 58f, 42f), extra[i], boton))
+                    juego.ElegirPiso(extra[i]);
+            }
+
+            avisoY = y + 136f;
         }
 
         if (!string.IsNullOrEmpty(juego.aviso))
-            GUI.Label(new Rect(ancho * 0.15f, y + 136f, ancho * 0.7f, 48f), juego.aviso, pequeño);
+            GUI.Label(new Rect(ancho * 0.15f, avisoY, ancho * 0.7f, 48f), juego.aviso, pequeño);
 
         GUI.backgroundColor = new Color(0.55f, 0.2f, 0.75f);
         if (juego.MostrarPisoX && GUI.Button(new Rect(ancho * 0.5f - 120f, alto - 124f, 240f, 42f), "Entrar a PISO X", boton))
