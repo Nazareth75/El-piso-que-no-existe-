@@ -77,6 +77,7 @@ public class InterfazCampus : MonoBehaviour
         var juego = DirectorCampus.Instancia;
         if (juego == null) return;
         Preparar();
+        if(juego.panel!=PanelCampus.Ascensor)buscarPisoAscensor=false;
 
         float escala = Mathf.Max(0.5f, Screen.height / 720f);
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(escala, escala, 1f));
@@ -109,6 +110,12 @@ public class InterfazCampus : MonoBehaviour
             case PanelCampus.Game:
                 Minijuego(juego, ancho, alto);
                 break;
+            case PanelCampus.SensorHuella:
+                DibujarSensorHuella(juego,ancho,alto);
+                break;
+            case PanelCampus.Recorrido:
+                MenuRecorrido(juego,ancho,alto);
+                break;
             case PanelCampus.Pausa:
                 Pausa(juego, ancho, alto);
                 break;
@@ -121,7 +128,10 @@ public class InterfazCampus : MonoBehaviour
         }
 
         if (juego.jugando && juego.panel == PanelCampus.Ninguno)
+        {
             Prompt(juego, ancho, alto);
+            GuiaRecorridoUI.Dibujar(juego, ancho, alto);
+        }
 
         if (juego.negro > 0.01f)
         {
@@ -145,7 +155,13 @@ public class InterfazCampus : MonoBehaviour
     void Hud(DirectorCampus juego, float ancho)
     {
         float bajo = 64f;
-        if (objetivoArt != null)
+        var misionArt=!EstadoPartida.desperto?juego.Tarjeta(RutaPlantaBaja.TarjetaActual):null;
+        if(misionArt!=null){
+            var tarjeta=PonerArte(misionArt,12f,8f,320f);
+            GUI.Label(new Rect(18,tarjeta.yMax+4,310,24),"Paso "+Mathf.Min(RutaPlantaBaja.Paso+1,RutaPlantaBaja.Total)+" / "+RutaPlantaBaja.Total,hudTexto);
+            bajo=tarjeta.yMax+32;
+        }
+        else if (objetivoArt != null)
         {
             var barra = PonerArte(objetivoArt, 12f, 8f, 440f);
             var texto = Trozo(barra, objetivoArt, 58f, 40f, 230f, 38f);
@@ -156,9 +172,14 @@ public class InterfazCampus : MonoBehaviour
 
         if (vidaArt != null)
         {
-            var vida = PonerArte(vidaArt, 12f, bajo, 250f);
+            // Keep the original bars, excluding the unrelated baked-in portrait.
+            float factor=250f/vidaArt.width;
+            const float recorte=86f;
+            var vida=new Rect(12f-recorte*factor,bajo,250f,vidaArt.height*factor);
+            var barras=new Rect(12f,bajo,(vidaArt.width-recorte)*factor,vida.height);
+            GUI.DrawTextureWithTexCoords(barras,vidaArt,new Rect(recorte/vidaArt.width,0,1-recorte/vidaArt.width,1),true);
             float lleno = Mathf.Clamp01(juego.estamina / 100f);
-            var hueco = Trozo(vida, vidaArt, 102f, 53f, 148f, 13f);
+            var hueco = Trozo(vida, vidaArt, 134f, 53f, 116f, 13f);
             Relleno(hueco, new Color(0.01f, 0.06f, 0.2f, 1f));
             Relleno(new Rect(hueco.x, hueco.y, hueco.width * lleno, hueco.height), new Color(0.05f, 0.85f, 0.95f, 1f));
         }
@@ -172,8 +193,61 @@ public class InterfazCampus : MonoBehaviour
         if (objetosArt != null)
             PonerArte(objetosArt, ancho - 284f, 8f, 272f);
 
+        if(!EstadoPartida.desperto && GUI.Button(new Rect(ancho-158,148,146,38),"Misiones [M]",boton))juego.panel=PanelCampus.Recorrido;
+
         string rumbo = "Sistemas " + EstadoPartida.sistemas + "   Medicina " + EstadoPartida.medicina + "   " + EstadoPartida.NombreTercera;
         GUI.Label(new Rect(ancho - 520f, objetosArt != null ? 112f : 66f, 500f, 24f), rumbo, pequeño);
+    }
+
+    Texture2D huellaSensor;
+    void DibujarSensorHuella(DirectorCampus juego,float ancho,float alto)
+    {
+        var caja=MarcoActividad("MOLINETES","Validación de acceso · sensor de huella",ancho,alto);
+        float w=caja.width;
+        if(huellaSensor==null){
+            huellaSensor=new Texture2D(128,128,TextureFormat.RGBA32,false);
+            huellaSensor.filterMode=FilterMode.Point;
+            var pixels=new Color[128*128];
+            for(int y=0;y<128;y++)for(int x=0;x<128;x++){
+                float dx=(x-64f)/44f,dy=(y-65f)/53f;
+                float radio=Mathf.Sqrt(dx*dx+dy*dy);
+                float onda=radio*52f+Mathf.Sin(Mathf.Atan2(dy,dx)*3f)*.65f;
+                bool linea=radio<1 && Mathf.Repeat(onda,5f)<1.7f;
+                pixels[y*128+x]=linea?new Color(.25f,.79f,.83f,.9f):Color.clear;
+            }
+            huellaSensor.SetPixels(pixels);huellaSensor.Apply();
+        }
+        float cy=caja.y+94,sz=170;
+        var sensor=new Rect(caja.center.x-sz*.5f,cy,sz,sz);
+        Relleno(sensor,new Color(.035f,.105f,.16f));Borde(sensor,new Color(.15f,.4f,.48f));
+        GUI.DrawTexture(sensor,huellaSensor);
+        float scan=sensor.y+sensor.height*(1-juego.sensorHuella.Posicion);
+        Relleno(new Rect(sensor.x+4,scan,sensor.width-8,2),juego.sensorHuella.EnZona?new Color(.4f,1,.65f):new Color(.4f,.83f,1));
+        ProgresoActividad(caja,juego.sensorHuella.Aciertos,cy+183);
+        var barra=new Rect(caja.x+38,cy+220,w-76,24);
+        Relleno(barra,new Color(.12f,.17f,.25f));
+        Relleno(new Rect(barra.x+(juego.sensorHuella.Centro-.14f)*barra.width,barra.y,.28f*barra.width,barra.height),new Color(.13f,.58f,.35f));
+        Relleno(new Rect(barra.x+juego.sensorHuella.Posicion*barra.width-2,barra.y-4,4,barra.height+8),Color.white);
+        GUI.Label(new Rect(caja.x+28,cy+254,w-56,46),juego.sensorHuella.Mensaje,pequeño);
+        if(GUI.Button(new Rect(caja.x+36,caja.yMax-104,w-72,44),"Leer sensor [Espacio]",boton))juego.LeerSensorHuella();
+        if(GUI.Button(new Rect(caja.x+36,caja.yMax-50,w-72,32),"Cancelar [Esc]",boton))juego.panel=PanelCampus.Ninguno;
+    }
+
+    void MenuRecorrido(DirectorCampus juego,float ancho,float alto)
+    {
+        Velo(ancho,alto,.75f);float w=Mathf.Min(680,ancho-32),h=Mathf.Min(640,alto-32);
+        var caja=new Rect((ancho-w)/2,(alto-h)/2,w,h);Relleno(caja,new Color(.035f,.045f,.1f,.98f));Borde(caja,new Color(1,.6f,.2f));
+        GUI.Label(new Rect(caja.x+20,caja.y+14,w-190,42),"Conoce UNIFRANZ",titulo);
+        if(GUI.Button(new Rect(caja.xMax-150,caja.y+16,130,36),"Volver [M]",boton))juego.panel=PanelCampus.Ninguno;
+        var tarjeta=juego.Tarjeta(RutaPlantaBaja.TarjetaActual);
+        if(tarjeta!=null)GUI.DrawTexture(new Rect(caja.x+24,caja.y+66,Mathf.Min(320,w-48),120),tarjeta,ScaleMode.ScaleToFit,true);
+        else GUI.Label(new Rect(caja.x+24,caja.y+66,w-48,64),RutaPlantaBaja.Objetivo,cuerpo);
+        float row=Mathf.Min(30,(h-248)/RutaPlantaBaja.Total);
+        for(int i=0;i<RutaPlantaBaja.Total;i++){
+            bool actual=i==RutaPlantaBaja.Paso;Color previo=GUI.color;GUI.color=i<RutaPlantaBaja.Paso?new Color(.45f,1,.72f):actual?new Color(1,.72f,.35f):new Color(.55f,.59f,.68f);
+            GUI.Label(new Rect(caja.x+28,caja.y+204+i*row,w-56,row),(i<RutaPlantaBaja.Paso?"✓ ":actual?"› ":"  ")+(i+1)+". "+RutaPlantaBaja.Titulos[i],pequeño);GUI.color=previo;
+        }
+        GUI.Label(new Rect(caja.x+20,caja.yMax-34,w-40,26),"Sigue el orden · E: interactuar · M / Esc: cerrar",pequeño);
     }
 
     void Prompt(DirectorCampus juego, float ancho, float alto)
@@ -269,33 +343,8 @@ public class InterfazCampus : MonoBehaviour
 
     void Tutorial(DirectorCampus juego, float ancho, float alto)
     {
-        if (dialogoArt == null)
-        {
-            var caja = new Rect(ancho * 0.5f - 320f, alto * 0.5f - 120f, 640f, 240f);
-            Relleno(caja, new Color(0.05f, 0.04f, 0.12f, 0.97f));
-            Borde(caja, new Color(0.55f, 0.35f, 0.95f));
-            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-            if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 110f, caja.yMax - 64f, 220f, 44f), "Entendido", boton))
-                juego.Entendido();
-            GUI.backgroundColor = Color.white;
-            return;
-        }
-
-        Velo(ancho, alto, 0.4f);
-        float anchoDialogo = Mathf.Min(760f, ancho * 0.9f);
-        float altoDialogo = anchoDialogo * dialogoArt.height / dialogoArt.width;
-        float y = (alto - altoDialogo) * 0.5f - 20f;
-        if (tutorArt != null)
-        {
-            var tutor = PonerArte(tutorArt, ancho * 0.5f - 280f, 16f, 560f);
-            y = tutor.yMax + 8f;
-        }
-        var puesta = new Rect(ancho * 0.5f - anchoDialogo * 0.5f, y, anchoDialogo, altoDialogo);
-        GUI.DrawTexture(puesta, dialogoArt, ScaleMode.StretchToFill, true);
-        GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-        if (GUI.Button(new Rect(puesta.x + puesta.width * 0.5f - 110f, puesta.yMax + 8f, 220f, 42f), "Entendido", boton))
-            juego.Entendido();
-        GUI.backgroundColor = Color.white;
+        // Legacy tutorial state: proceed without the unrelated baked-in portraits.
+        juego.Entendido();
     }
 
     void Frase(DirectorCampus juego, float ancho, float alto)
@@ -366,73 +415,84 @@ public class InterfazCampus : MonoBehaviour
         GUI.backgroundColor = Color.white;
     }
 
+    bool buscarPisoAscensor;
     void Ascensor(DirectorCampus juego, float ancho, float alto)
     {
-        Velo(ancho, alto, 0.45f);
-        var panelTex = juego.MostrarPisoX && juego.pisoX != null ? juego.pisoX : juego.ascensor;
-        if (panelTex != null)
-            GUI.DrawTexture(new Rect(ancho * 0.5f - 150f, 24f, 300f, 250f), panelTex, ScaleMode.ScaleToFit, true);
-
-        float y = 280f;
-        string[] pisos = { "PB", "M", "1", "2", "3", "4", "5" };
-        float total = pisos.Length * 64f;
-        float x = ancho * 0.5f - total * 0.5f;
-        GUI.backgroundColor = new Color(0.16f, 0.22f, 0.36f);
-        for (int i = 0; i < pisos.Length; i++)
-        {
-            if (GUI.Button(new Rect(x + i * 64f, y, 58f, 42f), pisos[i], boton))
-                juego.ElegirPiso(pisos[i]);
+        var caja=MarcoActividad("ASCENSOR","Estás en "+juego.PlantaActual+" · selecciona el botón del panel",ancho,alto);
+        float factorPanel=Mathf.Min(1.8f,(caja.width-40)/240f);
+        var panelRect=new Rect(caja.center.x-120*factorPanel,caja.y+94,240*factorPanel,210*factorPanel);
+        if(juego.ascensor!=null)GUI.DrawTexture(panelRect,juego.ascensor,ScaleMode.StretchToFill,true);
+        if(!buscarPisoAscensor){
+        string[] pisos={"PB","M","1","2","3","4","5"};
+        for(int i=0;i<pisos.Length;i++){
+            var zona=new Rect(panelRect.x+(16+(i%3)*72)*factorPanel,panelRect.y+(46+(i/3)*50)*factorPanel,64*factorPanel,40*factorPanel);
+            bool actual=pisos[i]==juego.PlantaActual;
+            bool disponible=pisos[i]!="1";
+            if(!disponible)Relleno(zona,new Color(.03f,.04f,.09f,.72f));
+            if(actual)Borde(zona,new Color(.4f,.95f,.7f));
+            bool previo=GUI.enabled;GUI.enabled=disponible&&!actual;
+            if(GUI.Button(zona,"",vacio)){buscarPisoAscensor=false;juego.ElegirPiso(pisos[i]);}
+            GUI.enabled=previo;
         }
-
-        float avisoY = y + 56f;
-        if (juego.BotonXListo)
-        {
-            GUI.Label(new Rect(0f, y + 52f, ancho, 28f), "PISO X", pequeño);
-            GUI.backgroundColor = new Color(0.55f, 0.2f, 0.75f);
-            if (GUI.Button(new Rect(ancho * 0.5f - 29f, y + 84f, 58f, 42f), "X", boton))
-                juego.ElegirPiso("X");
-            avisoY = y + 136f;
+        var extra=new Rect(panelRect.x+88*factorPanel,panelRect.y+146*factorPanel,64*factorPanel,40*factorPanel);
+        if(juego.BotonXListo || juego.MostrarPisoX){
+            if(GUI.Button(extra,"PISO X",boton))juego.ElegirPiso("X");
+        }else if(EstadoPartida.desperto){
+            if(GUI.Button(extra,"?",boton))buscarPisoAscensor=true;
         }
-        else if (EstadoPartida.desperto)
-        {
-            GUI.Label(new Rect(0f, y + 52f, ancho, 28f), "¿Cuál piso no está?", pequeño);
-            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-            string[] extra = { "6", "7", "8" };
-            float ex = ancho * 0.5f - 96f;
-            for (int i = 0; i < extra.Length; i++)
-            {
-                if (GUI.Button(new Rect(ex + i * 64f, y + 84f, 58f, 42f), extra[i], boton))
-                    juego.ElegirPiso(extra[i]);
-            }
-
-            avisoY = y + 136f;
         }
-
-        if (!string.IsNullOrEmpty(juego.aviso))
-            GUI.Label(new Rect(ancho * 0.15f, avisoY, ancho * 0.7f, 48f), juego.aviso, pequeño);
-
-        GUI.backgroundColor = new Color(0.55f, 0.2f, 0.75f);
-        if (juego.MostrarPisoX && GUI.Button(new Rect(ancho * 0.5f - 120f, alto - 124f, 240f, 42f), "Entrar a PISO X", boton))
-            juego.EntrarAlPiso();
-        GUI.backgroundColor = new Color(0.2f, 0.2f, 0.25f);
-        if (GUI.Button(new Rect(ancho * 0.5f - 80f, alto - 70f, 160f, 40f), "Cerrar", boton))
-            juego.CerrarPanel();
-        GUI.backgroundColor = Color.white;
+        if(buscarPisoAscensor){
+            Relleno(panelRect,new Color(.10f,.09f,.18f,1));Borde(panelRect,new Color(.95f,.57f,.2f));
+            GUI.Label(new Rect(panelRect.x+12,panelRect.y+30,panelRect.width-24,50),"¿Cuál piso no figura?",titulo);
+            string[] secretos={"6","7","8"};
+            for(int i=0;i<3;i++)if(GUI.Button(new Rect(panelRect.x+20+i*(panelRect.width-40)/3,panelRect.y+130,(panelRect.width-40)/3-6,66),secretos[i],boton)){juego.ElegirPiso(secretos[i]);buscarPisoAscensor=false;}
+            if(GUI.Button(new Rect(panelRect.x+24,panelRect.y+260,panelRect.width-48,46),"Volver a destinos",boton))buscarPisoAscensor=false;
+        }
+        GUI.Label(new Rect(caja.x+18,caja.yMax-91,caja.width-36,30),string.IsNullOrEmpty(juego.aviso)?"Piso 1: sin plano disponible · PB: tecla 0 · M: tecla M":juego.aviso,pequeño);
+        if(GUI.Button(new Rect(caja.x+30,caja.yMax-50,caja.width-60,36),"Cerrar [Esc]",boton)){buscarPisoAscensor=false;juego.CerrarPanel();}
     }
 
+    Rect MarcoActividad(string nombre,string subtitulo,float ancho,float alto)
+    {
+        Velo(ancho,alto,.76f);
+        float w=Mathf.Min(610,ancho-32),h=Mathf.Min(570,alto-32);
+        var caja=new Rect((ancho-w)/2,(alto-h)/2,w,h);
+        Relleno(new Rect(caja.x+6,caja.y+7,w,h),new Color(0,0,0,.4f));
+        Relleno(caja,new Color(.065f,.055f,.14f,.99f));Borde(caja,new Color(.46f,.38f,.68f));
+        Relleno(new Rect(caja.x+3,caja.y+3,w-6,74),new Color(.10f,.085f,.20f));
+        Relleno(new Rect(caja.x+20,caja.y+78,w-40,2),new Color(.96f,.57f,.18f));
+        GUI.Label(new Rect(caja.x+18,caja.y+10,w-36,36),nombre,titulo);
+        GUI.Label(new Rect(caja.x+18,caja.y+47,w-36,24),subtitulo,pequeño);
+        return caja;
+    }
+    void ProgresoActividad(Rect caja,int aciertos,float y)
+    {
+        float paso=50,start=caja.center.x-70;
+        for(int i=0;i<3;i++){
+            var ficha=new Rect(start+i*paso,y,40,26);
+            Relleno(ficha,i<aciertos?new Color(.20f,.65f,.45f):new Color(.18f,.17f,.29f));
+            GUI.Label(ficha,i<aciertos?"✓":(i+1).ToString(),pequeño);
+        }
+    }
     void Minijuego(DirectorCampus juego, float ancho, float alto)
     {
-        Velo(ancho, alto, 0.4f);
-        var tex = juego.Tarjeta("game_room");
-        if (tex != null) GUI.DrawTexture(new Rect(ancho * 0.5f - 280f, 40f, 560f, 160f), tex, ScaleMode.ScaleToFit, true);
-        var caja = new Rect(ancho * 0.5f - 260f, 220f, 520f, 180f);
-        PintarCaja(caja);
-        GUI.Label(new Rect(caja.x, caja.y + 16f, caja.width, 36f), "Pulsa " + juego.flecha, titulo);
-        GUI.Label(new Rect(caja.x, caja.y + 70f, caja.width, 30f), "Aciertos " + juego.aciertos + " / 3", pequeño);
-        GUI.backgroundColor = new Color(0.2f, 0.2f, 0.25f);
-        if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 70f, caja.yMax - 52f, 140f, 36f), "Salir", boton))
-            juego.CerrarPanel();
-        GUI.backgroundColor = Color.white;
+        var caja=MarcoActividad("GAME ROOM","Desafío de reflejos · tres aciertos seguidos",ancho,alto);
+        ProgresoActividad(caja,juego.aciertos,caja.y+96);
+        GUI.Label(new Rect(caja.x+24,caja.y+137,caja.width-48,36),juego.flecha,titulo);
+        float cx=caja.center.x,cy=caja.y+221,paso=76,tam=66;
+        KeyCode[] teclas={KeyCode.UpArrow,KeyCode.LeftArrow,KeyCode.DownArrow,KeyCode.RightArrow};
+        string[] etiquetas={"↑\nW","←\nA","↓\nS","→\nD"};
+        string[] nombres={"ARRIBA","IZQUIERDA","ABAJO","DERECHA"};
+        Vector2[] offsets={new Vector2(0,-paso*.35f),new Vector2(-paso,paso*.65f),new Vector2(0,paso*.65f),new Vector2(paso,paso*.65f)};
+        for(int i=0;i<4;i++){
+            Color previo=GUI.backgroundColor;
+            GUI.backgroundColor=juego.flecha==nombres[i]?new Color(.98f,.58f,.18f):new Color(.28f,.23f,.43f);
+            if(GUI.Button(new Rect(cx+offsets[i].x-tam*.5f,cy+offsets[i].y,tam,tam),etiquetas[i],boton))juego.PulsarDireccionArcade(teclas[i]);
+            GUI.backgroundColor=previo;
+        }
+        GUI.Label(new Rect(caja.x+30,caja.y+396,caja.width-60,64),juego.avisoArcade,pequeño);
+        GUI.Label(new Rect(caja.x+20,caja.yMax-101,caja.width-40,25),"Flechas / WASD o pulsa los controles de pantalla",pequeño);
+        if(GUI.Button(new Rect(caja.x+30,caja.yMax-59,caja.width-60,40),"Volver al campus [Esc]",boton))juego.CerrarPanel();
     }
 
     void Pausa(DirectorCampus juego, float ancho, float alto)

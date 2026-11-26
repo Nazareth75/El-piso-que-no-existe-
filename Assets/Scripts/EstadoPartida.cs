@@ -30,6 +30,7 @@ public static class EstadoPartida
 
     public static void Reiniciar()
     {
+        RutaPlantaBaja.Reiniciar();
         sistemas = 0;
         medicina = 0;
         tercera = 0;
@@ -55,13 +56,8 @@ public static class EstadoPartida
         if (enPisoX) return "Nivel 3 · El piso que no existe. Llega al círculo del centro. Esquiva a las entidades.";
         if (!desperto)
         {
-            if (!entrada) return "Nivel 1 · Conocer la universidad. Entra por la puerta.";
-            if (!nota) return "Nivel 1 · Conocer la universidad. Pide información en recepción.";
-            if (!hall) return "Nivel 1 · Conocer la universidad. Cruza el hall.";
-            if (!huella) return "Nivel 1 · Conocer la universidad. Valida la huella para ver el ascensor.";
-            return "Nivel 1 · Conocer la universidad. Ve el ascensor.";
+            return RutaPlantaBaja.Objetivo;
         }
-
         if (!pista) return "Nivel 2 · Despiertas. No hay nadie. Lee la nota de recepción.";
         if (!clinica && !sistemasListo) return "Nivel 2 · La universidad está vacía. Revisa la clínica y el ascensor.";
         if (!sistemasListo) return "Nivel 2 · En el ascensor, busca el piso que no está.";
