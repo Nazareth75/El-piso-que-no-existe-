@@ -83,6 +83,7 @@ public class DirectorCampus : MonoBehaviour
     public float negro;
     public bool BotonXListo { get; private set; }
     readonly List<Vector2> gradasPiso = new List<Vector2>();
+    readonly List<PuntoCampus> puntosPiso = new List<PuntoCampus>();
     static readonly Vector2 PuertaBibliotecaPiso = new Vector2(18.46f, 11.55f);
     static readonly Vector2 SpawnBiblioteca = new Vector2(19.06f, 3.2f);
     static readonly Vector2 SalidaBiblioteca = new Vector2(19.06f, 2.23f);
@@ -271,6 +272,15 @@ public class DirectorCampus : MonoBehaviour
                     float distanciaPuerta = Vector2.Distance(aqui, PuertaBibliotecaPiso);
                     if (distanciaPuerta <= 1.8f && (cerca == null || distanciaPuerta < limite))
                         cerca = new PuntoCampus { id = "biblioteca", nombre = "Biblioteca", posicion = PuertaBibliotecaPiso, radio = 1.8f };
+                }
+
+                foreach (var punto in puntosPiso)
+                {
+                    float distancia = Vector2.Distance(aqui, punto.posicion);
+                    if (distancia > punto.radio) continue;
+                    if (cerca != null && distancia >= limite) continue;
+                    limite = distancia;
+                    cerca = punto;
                 }
 
                 return cerca;
@@ -668,6 +678,36 @@ public class DirectorCampus : MonoBehaviour
                 Decir("SERVICIOS ESTUDIANTILES", EstadoPartida.desperto
                     ? "Servicios estudiantiles está vacío. No hay quién atienda un trámite."
                     : "En servicios estudiantiles te ayudan con trámites del primer día.", "servicios_estudiantiles");
+                break;
+            case "arca":
+                Decir("ARCA", EstadoPartida.desperto
+                    ? "El depósito ARCA está cerrado. No quedó nadie del archivo."
+                    : "Depósito ARCA. Aquí se guarda el archivo del campus. Esta sala es la de este piso.", "");
+                break;
+            case "gaming":
+                Decir("GAMING Y SONIDO", EstadoPartida.desperto
+                    ? "La sala de gaming y sonido está apagada."
+                    : "Sala de gaming y sonido. Los estudiantes usan las cabinas y los equipos.", "");
+                break;
+            case "mac":
+                Decir("SALA MAC", EstadoPartida.desperto
+                    ? "La sala MAC está vacía. Las computadoras quedaron apagadas."
+                    : "Sala MAC. Estas computadoras son para las clases de este piso.", "");
+                break;
+            case "fotocopia":
+                Decir("FOTOCOPIA", EstadoPartida.desperto
+                    ? "La fotocopiadora está apagada."
+                    : "Fotocopiadora de este piso. Sirve para las copias del día.", "");
+                break;
+            case "aula2":
+                Decir("AULA GRANDE", EstadoPartida.desperto
+                    ? "El aula grande está vacía."
+                    : "Aula grande de este piso. Aquí son las clases.", "");
+                break;
+            case "bano2":
+                Decir("BAÑOS", EstadoPartida.desperto
+                    ? "Los baños de este piso están vacíos."
+                    : "Baños de este piso. Forman parte del recorrido.", "");
                 break;
         }
     }
@@ -1530,6 +1570,49 @@ public class DirectorCampus : MonoBehaviour
             int indice = Mathf.Clamp(lado, 0, gradasPiso.Count - 1);
             PonerJugador(gradasPiso[indice]);
         }
+
+        PrepararPiso(n);
+    }
+
+    void PrepararPiso(int n)
+    {
+        puntosPiso.Clear();
+        if (n != 2 || interiorGo == null) return;
+
+        var arca = new Vector2(2.88f, 6.54f);
+        var gaming = new Vector2(3.08f, 17.88f);
+        var mac = new Vector2(30.19f, 9.81f);
+        var foto = new Vector2(35.19f, 8.08f);
+        var aula = new Vector2(10.96f, 8.27f);
+        var bano = new Vector2(24.81f, 8.65f);
+        PuntoPiso("arca", "ARCA", arca, 1.7f);
+        PuntoPiso("gaming", "Gaming y sonido", gaming, 1.7f);
+        PuntoPiso("mac", "Sala MAC", mac, 1.7f);
+        PuntoPiso("fotocopia", "Fotocopia", foto, 1.7f);
+        PuntoPiso("aula2", "Aula grande", aula, 1.7f);
+        PuntoPiso("bano2", "Baños", bano, 1.6f);
+        Habitante("admisiones", arca);
+        Habitante("game_room", gaming);
+        Habitante("estudiante_sentado", mac);
+        Habitante("estudiante_mujer", aula);
+        Habitante("estudiante_caminando", foto);
+    }
+
+    void PuntoPiso(string id, string nombre, Vector2 posicion, float radio)
+    {
+        puntosPiso.Add(new PuntoCampus { id = id, nombre = nombre, posicion = posicion, radio = radio });
+    }
+
+    void Habitante(string carpeta, Vector2 posicion)
+    {
+        var go = new GameObject(carpeta);
+        go.transform.SetParent(interiorGo.transform);
+        go.transform.position = posicion;
+        var dibujo = go.AddComponent<SpriteRenderer>();
+        var npc = go.AddComponent<NpcCampus>();
+        npc.frames = RecursosCampus.Carpeta(carpeta, 48f);
+        npc.camina = false;
+        if (npc.frames != null && npc.frames.Length > 0) dibujo.sprite = npc.frames[0];
     }
 
     void PonerPuertaBiblioteca()
@@ -1668,6 +1751,7 @@ public class DirectorCampus : MonoBehaviour
         interiorGo = null;
         marcoGo = null;
         gradasPiso.Clear();
+        puntosPiso.Clear();
     }
 
     void EntrarPisoX()
