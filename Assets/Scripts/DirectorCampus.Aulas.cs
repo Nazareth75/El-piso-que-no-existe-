@@ -108,8 +108,8 @@ public partial class DirectorCampus
     {
         if (!EnAulaAcademica) return;
         jugador.Detener();
-        if (interiorGo != null) Destroy(interiorGo);
-        if (marcoGo != null) Destroy(marcoGo);
+        if (interiorGo != null){interiorGo.SetActive(false);Destroy(interiorGo);}
+        if (marcoGo != null){marcoGo.SetActive(false);Destroy(marcoGo);}
         interiorGo = exteriorAcademico;
         marcoGo = marcoExteriorAcademico;
         exteriorAcademico = null;

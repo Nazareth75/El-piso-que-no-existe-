@@ -16,6 +16,8 @@ public enum PanelCampus
     Pausa,
     Muerte,
     Fin,
+    Recorrido,
+    SensorHuella,
     PisoSiete
 }
 
@@ -79,6 +81,10 @@ public partial class DirectorCampus : MonoBehaviour
     KeyCode teclaJuego = KeyCode.UpArrow;
     bool avisoPisoX;
     int pisoNumero;
+    bool llegadaAscensor;
+    static readonly Vector2 AscensorPB=new Vector2(10.7422f,16.661f);
+    static readonly Vector2 AscensorSuperior=new Vector2(17.7734f,11.0219f);
+    public string PlantaActual=>!dentro?"PB":salaId=="mezanine"?"M":salaId=="piso"?pisoNumero.ToString():salaId=="biblioteca"?"5":salaId=="pisox"?"X":"PB";
     bool aparecerEnPuerta;
     bool pidioPlantaBaja;
     bool desmayando;
@@ -151,6 +157,25 @@ public partial class DirectorCampus : MonoBehaviour
     void Update()
     {
         if (jugador == null) return;
+        if(panel==PanelCampus.Ascensor){
+            if(Input.GetKeyDown(KeyCode.Escape)){CerrarPanel();return;}
+            if(Input.GetKeyDown(KeyCode.Alpha0))ElegirPiso("PB");
+            else if(Input.GetKeyDown(KeyCode.M))ElegirPiso("M");
+            else if(Input.GetKeyDown(KeyCode.Alpha2))ElegirPiso("2");
+            else if(Input.GetKeyDown(KeyCode.Alpha3))ElegirPiso("3");
+            else if(Input.GetKeyDown(KeyCode.Alpha4))ElegirPiso("4");
+            else if(Input.GetKeyDown(KeyCode.Alpha5))ElegirPiso("5");
+            else if(Input.GetKeyDown(KeyCode.X))ElegirPiso("X");
+            return;
+        }
+        if(panel==PanelCampus.SensorHuella){
+            sensorHuella.Avanzar(Time.unscaledDeltaTime);
+            if(Input.GetKeyDown(KeyCode.Escape)){panel=PanelCampus.Ninguno;return;}
+            if(Input.GetKeyDown(KeyCode.Space))LeerSensorHuella();
+            return;
+        }
+        if(jugando && !EstadoPartida.desperto && !EstadoPartida.enPisoX && Input.GetKeyDown(KeyCode.M) && (panel==PanelCampus.Ninguno || panel==PanelCampus.Recorrido))panel=panel==PanelCampus.Recorrido?PanelCampus.Ninguno:PanelCampus.Recorrido;
+        if(panel==PanelCampus.Recorrido && Input.GetKeyDown(KeyCode.Escape)){panel=PanelCampus.Ninguno;return;}
 
         if (EnAulaAcademica && jugando && panel == PanelCampus.Ninguno && jugador.transform.position.y < 1.7f && Time.time > puedeSalir)
             SalirAulaAcademica();
@@ -327,6 +352,35 @@ public partial class DirectorCampus : MonoBehaviour
         return mejor;
     }
 
+    public bool TryGuiaRecorrido(out Vector2 origen,out Vector2 destino,out bool alAlcance,out string objetivo)
+    {
+        origen=Vector2.zero;destino=Vector2.zero;alAlcance=false;objetivo="";
+        if(jugador==null || !jugando || panel!=PanelCampus.Ninguno || EstadoPartida.desperto || RutaPlantaBaja.Completa || negro>.01f)return false;
+        origen=jugador.transform.position;
+        string id=RutaPlantaBaja.Destinos[RutaPlantaBaja.Paso];
+        objetivo=id;
+        if(dentro){
+            if(salaId!=id){
+                destino=new Vector2(Mathf.Clamp(origen.x,1.1f,salaAncho-1.1f),1.3f);
+                objetivo="salir_"+salaId;return true;
+            }
+            destino=marcaSala;
+            var cercanoInterior=Cercano();
+            alAlcance=cercanoInterior!=null && cercanoInterior.id==id;
+            return true;
+        }
+        PuntoCampus mejor=null;float distancia=float.PositiveInfinity;
+        foreach(var punto in puntos){
+            if(punto.id!=id)continue;
+            float actual=(punto.posicion-origen).sqrMagnitude;
+            if(actual<distancia){distancia=actual;mejor=punto;}
+        }
+        if(mejor==null)return false;
+        destino=mejor.posicion;
+        var cercano=Cercano();alAlcance=cercano!=null && cercano.id==id;
+        return true;
+    }
+
     public Texture2D Tarjeta(string id)
     {
         tarjetas.TryGetValue(id, out var tex);
@@ -362,8 +416,8 @@ public partial class DirectorCampus : MonoBehaviour
 
     public void Entendido()
     {
-        jugando = true;
-        Decir("CÓMO MOVERTE", "Ves el campus desde arriba, como el plano.\nFlechas o W A S D: caminar\nShift: correr. La barra de aire se gasta.\nE: hablar, leer y usar la huella\nEn la clínica: 1 ayudar, 2 seguir de largo\nEsc: pausa\nSi la presencia te alcanza, repites solo esa huida.", "");
+        jugando=true;panel=PanelCampus.Ninguno;
+        if(jugador!=null)jugador.Detener();
     }
 
     public void CerrarPanel()
@@ -449,6 +503,9 @@ public partial class DirectorCampus : MonoBehaviour
 
     public void ElegirPiso(string piso)
     {
+        if(piso==PlantaActual){aviso="Ya estás en "+piso+".";return;}
+        if(piso=="X" && !BotonXListo && !MostrarPisoX){aviso="Ese destino todavía no está disponible.";return;}
+
         if (piso == "X")
         {
             if (!BotonXListo)
@@ -466,8 +523,10 @@ public partial class DirectorCampus : MonoBehaviour
         {
             aviso = "";
             panel = PanelCampus.Ninguno;
-            if (dentro) SalirSala();
-            else aviso = "Ya estás en planta baja.";
+            if(EstadoPartida.enPisoX)SalirPisoX();
+            else if(dentro)SalirSala();
+            PonerJugador(AscensorPB);
+            aviso="";
             return;
         }
 
@@ -475,6 +534,7 @@ public partial class DirectorCampus : MonoBehaviour
         {
             aviso = "";
             panel = PanelCampus.Ninguno;
+            llegadaAscensor=true;
             SubirMezanine();
             return;
         }
@@ -489,6 +549,7 @@ public partial class DirectorCampus : MonoBehaviour
         {
             aviso = "";
             panel = PanelCampus.Ninguno;
+            llegadaAscensor=true;
             EntrarPisoNumero(int.Parse(piso));
             return;
         }
@@ -523,7 +584,16 @@ public partial class DirectorCampus : MonoBehaviour
         aviso = "Ese piso existe. El que buscas no tiene botón.";
     }
 
+    public readonly SensorHuellaJuego sensorHuella=new SensorHuellaJuego();
+    public void LeerSensorHuella()
+    {
+        if(panel!=PanelCampus.SensorHuella || !sensorHuella.Leer())return;
+        EstadoPartida.huella=true;AbrirPuertas();
+        Decir("MOLINETES · ACCESO VALIDADO", "Tu huella fue registrada. Los molinetes están abiertos; continúa el recorrido.", "control_huella");
+    }
+
     public bool MostrarPisoX => BotonXListo;
+
 
     void Usar(string id)
     {
@@ -534,6 +604,11 @@ public partial class DirectorCampus : MonoBehaviour
             NivelSiete.Usar(id);
             return;
         }
+
+        if(!EstadoPartida.desperto && !RutaPlantaBaja.Permite(id)){
+            Decir("RECORRIDO PASO A PASO", "Primero: "+RutaPlantaBaja.Objetivo+".\n\nPulsa M para consultar tu recorrido.", "");return;
+        }
+
         if (id == "salir")
         {
             SalirSala();
@@ -644,13 +719,14 @@ public partial class DirectorCampus : MonoBehaviour
                     break;
                 }
 
-                EstadoPartida.huella = true;
-                AbrirPuertas();
-                Decir("CONTROL DE HUELLA", EstadoPartida.desperto
-                    ? "La huella sigue abierta. Del otro lado no hay nadie."
-                    : "Huella del primer día. Las puertas se abren. El ascensor está al fondo.", "control_huella");
+                if(EstadoPartida.huella){
+                    Decir("MOLINETES", "Tu huella ya está validada. Puedes pasar.", "control_huella");
+                }else{
+                    sensorHuella.Reiniciar();panel=PanelCampus.SensorHuella;jugador.Detener();
+                }
                 break;
             case "ascensor":
+                if(!EstadoPartida.desperto)RutaPlantaBaja.Completar("primera_vez");
                 if (pidioPlantaBaja && !BotonXListo && !desmayando)
                 {
                     StartCoroutine(DesmayoEnAscensor());
@@ -686,6 +762,8 @@ public partial class DirectorCampus : MonoBehaviour
                 }
 
                 aciertos = 0;
+                avisoArcade="Sigue la dirección iluminada. Consigue tres aciertos seguidos.";
+                proximaPulsacionArcade=Time.unscaledTime+.25f;
                 NuevaFlecha();
                 panel = PanelCampus.Game;
                 break;
@@ -887,6 +965,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     void Decir(string titulo, string cuerpo, string tarjeta)
     {
+        if(!EstadoPartida.desperto && (tarjeta!="control_huella" || EstadoPartida.huella) && (tarjeta!="game_room" || EstadoPartida.gameRoom))RutaPlantaBaja.Completar(tarjeta);
         confirmarHuida = false;
         fraseTitulo = titulo;
         fraseCuerpo = cuerpo;
@@ -1272,6 +1351,7 @@ public partial class DirectorCampus : MonoBehaviour
             var caja = muro.AddComponent<BoxCollider2D>();
             caja.size = new Vector2(w / pixelesAncho * 40f, h / pixelesAlto * 20f);
         }
+        ColisionesCampus.AgregarEstructura(murosGo.transform);
     }
 
     void ConstruirJugador()
@@ -1284,9 +1364,9 @@ public partial class DirectorCampus : MonoBehaviour
         cuerpo.constraints = RigidbodyConstraints2D.FreezeRotation;
         cuerpo.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         cuerpo.interpolation = RigidbodyInterpolation2D.Interpolate;
-        var circulo = go.AddComponent<CircleCollider2D>();
-        circulo.radius = 0.28f;
-        circulo.offset = new Vector2(0f, 0.32f);
+        var pies = go.AddComponent<CapsuleCollider2D>();
+        pies.direction=CapsuleDirection2D.Horizontal;
+        pies.size=new Vector2(.46f,.24f);pies.offset=new Vector2(0,.15f);
         jugador = go.AddComponent<JugadorCampus>();
         go.transform.position = Nacimiento;
     }
@@ -1335,7 +1415,7 @@ public partial class DirectorCampus : MonoBehaviour
         Punto("huella", "Control de huella", new Vector2(21.15f, 9.8f), 1.8f);
         Punto("huella", "Control de huella", new Vector2(21.15f, 6.65f), 1.8f);
         Punto("huella", "Control de huella", new Vector2(21.15f, 4.57f), 1.8f);
-        Punto("ascensor", "Ascensor", Celda(15, 2), 1.45f);
+        Punto("ascensor", "Ascensor", AscensorPB, 1.9f);
         Punto("gradas", "Subir", new Vector2(14.38f, 16.1f), 1.7f);
         Punto("servicios", "Servicios estudiantiles", Celda(12, 3), 1.35f);
         Punto("auditorio", "Auditorio", new Vector2(6.21f, 15.39f), 1.8f);
@@ -1443,30 +1523,24 @@ public partial class DirectorCampus : MonoBehaviour
         else { teclaJuego = KeyCode.RightArrow; flecha = "DERECHA"; }
     }
 
+    public string avisoArcade="Sigue la dirección iluminada. Consigue tres aciertos seguidos.";
+    float proximaPulsacionArcade;
+    public void PulsarDireccionArcade(KeyCode tecla)
+    {
+        if(panel!=PanelCampus.Game || Time.unscaledTime<proximaPulsacionArcade)return;
+        proximaPulsacionArcade=Time.unscaledTime+.18f;
+        if(tecla!=teclaJuego){aciertos=0;avisoArcade="Dirección incorrecta. Empieza otra vez; no hay límite de intentos.";NuevaFlecha();return;}
+        aciertos++;
+        if(aciertos>=3){EstadoPartida.gameRoom=true;Decir("GAME ROOM", "Completaste el minijuego. No cambia tu carrera.", "game_room");return;}
+        avisoArcade="¡Bien! Sigue la siguiente dirección.";NuevaFlecha();
+    }
     void RevisarMinijuego()
     {
-        bool bien = Input.GetKeyDown(teclaJuego) || TeclaEquivalente();
-        bool flecha = Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow) ||
-                      Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) ||
-                      Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) ||
-                      Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D);
-        if (!flecha) return;
-        if (!bien)
-        {
-            aciertos = 0;
-            NuevaFlecha();
-            return;
-        }
-
-        aciertos++;
-        if (aciertos >= 3)
-        {
-            EstadoPartida.gameRoom = true;
-            Decir("GAME ROOM", "Completaste el minijuego. No cambia tu carrera.", "game_room");
-            return;
-        }
-
-        NuevaFlecha();
+        if(Input.GetKeyDown(KeyCode.Escape)){CerrarPanel();return;}
+        if(Input.GetKeyDown(KeyCode.UpArrow)||Input.GetKeyDown(KeyCode.W))PulsarDireccionArcade(KeyCode.UpArrow);
+        else if(Input.GetKeyDown(KeyCode.DownArrow)||Input.GetKeyDown(KeyCode.S))PulsarDireccionArcade(KeyCode.DownArrow);
+        else if(Input.GetKeyDown(KeyCode.LeftArrow)||Input.GetKeyDown(KeyCode.A))PulsarDireccionArcade(KeyCode.LeftArrow);
+        else if(Input.GetKeyDown(KeyCode.RightArrow)||Input.GetKeyDown(KeyCode.D))PulsarDireccionArcade(KeyCode.RightArrow);
     }
 
     bool TeclaEquivalente()
@@ -1554,22 +1628,50 @@ public partial class DirectorCampus : MonoBehaviour
         Borde(salaAncho * 0.5f, salaAlto - 0.4f, salaAncho, 0.8f);
         Borde(salaAncho * 0.5f, 0.45f, salaAncho, 0.9f);
         PonerJugador(new Vector2(salaAncho * 0.5f, 2.6f));
-        if (id == "admisiones" || id == "clinica")
-            jugador.transform.localScale = new Vector3(2.8f, 2.8f, 1f);
+        jugador.AjustarAltura(1.8f);
+        ConstruirObstaculosSala(id);
+        if(id=="auditorio")PonerJugador(new Vector2(salaAncho*.35f,2.6f));
+        if(id=="admisiones")marcaSala=new Vector2(salaAncho*.50f,salaAlto*.37f);
+        if(id=="cafeteria")marcaSala=new Vector2(salaAncho*.29f,salaAlto*.40f);
         if (id == "admisiones")
         {
-            const float escala = 2.8f;
-            marcaSala = new Vector2(salaAncho * 0.5f, salaAlto * 0.5f);
+            const float escala = 1f;
             var guia = new GameObject("GuiaAdmisiones");
             guia.transform.SetParent(interiorGo.transform);
-            guia.transform.position = new Vector3(marcaSala.x, marcaSala.y, 0f);
+            guia.transform.position = new Vector3(salaAncho*.5f,salaAlto*.55f,0f);
             guia.transform.localScale = new Vector3(escala, escala, 1f);
             var dibujoGuia = guia.AddComponent<SpriteRenderer>();
             dibujoGuia.sortingOrder = 90;
             var npc = guia.AddComponent<NpcCampus>();
             npc.frames = RecursosCampus.Carpeta("admisiones", 48f);
             npc.camina = false;
-            if (npc.frames.Length > 0) dibujoGuia.sprite = npc.frames[0];
+            if (npc.frames.Length > 0){dibujoGuia.sprite=npc.frames[0];float alto=npc.frames[0].bounds.size.y;guia.transform.localScale=Vector3.one*(alto>.01f?1.8f/alto:1f);}
+        }
+    }
+
+    void Mueble(float x,float y,float w,float h)
+    {
+        Borde(x*salaAncho,y*salaAlto,w*salaAncho,h*salaAlto);
+    }
+    void ConstruirObstaculosSala(string id)
+    {
+        if(id=="clinica"){
+            Mueble(.24f,.25f,.22f,.14f);Mueble(.75f,.25f,.22f,.14f);
+            Mueble(.27f,.57f,.20f,.11f);Mueble(.73f,.57f,.20f,.11f);
+        }else if(id=="admisiones"){
+            Mueble(.16f,.48f,.18f,.10f);Mueble(.40f,.52f,.16f,.10f);Mueble(.59f,.52f,.16f,.10f);Mueble(.81f,.48f,.19f,.10f);
+            Mueble(.17f,.14f,.22f,.10f);
+        }else if(id=="cafeteria"){
+            Mueble(.17f,.38f,.18f,.27f);
+            Mueble(.38f,.42f,.12f,.08f);Mueble(.59f,.42f,.12f,.08f);Mueble(.80f,.42f,.12f,.08f);
+            Mueble(.30f,.23f,.12f,.08f);Mueble(.55f,.23f,.12f,.08f);Mueble(.80f,.23f,.12f,.08f);
+        }else if(id=="auditorio"){
+            Mueble(.20f,.25f,.22f,.30f);Mueble(.51f,.25f,.22f,.30f);Mueble(.82f,.25f,.22f,.30f);
+            Mueble(.51f,.70f,.65f,.10f);
+        }else if(id=="game"){
+            Mueble(.19f,.56f,.23f,.13f);Mueble(.52f,.29f,.17f,.15f);Mueble(.85f,.49f,.20f,.12f);Mueble(.86f,.14f,.20f,.09f);
+        }else if(id=="servicios"){
+            Mueble(.36f,.28f,.20f,.14f);Mueble(.78f,.32f,.23f,.18f);
         }
     }
 
@@ -1635,6 +1737,7 @@ public partial class DirectorCampus : MonoBehaviour
         var dibujo = interiorGo.AddComponent<SpriteRenderer>();
         dibujo.sprite = RecursosCampus.ComoSprite(tex, 25.6f, new Vector2(0.5f, 0.5f));
         dibujo.sortingOrder = -20;
+        if(dibujo.sprite!=null)interiorGo.transform.localScale=new Vector3(1,20f/dibujo.sprite.bounds.size.y,1);
         interiorGo.transform.position = new Vector3(20f, 10f, 0f);
         marcoGo = new GameObject("Marco");
         Borde(0.4f, 10f, 0.8f, 20f);
@@ -1644,7 +1747,8 @@ public partial class DirectorCampus : MonoBehaviour
         if (jugador != null) jugador.transform.localScale = Vector3.one;
         if (lado < 0 || lado >= GradasMezanine.Length) lado = 0;
         PrepararMezanine();
-        PonerJugador(GradasMezanine[lado]);
+        if(llegadaAscensor){llegadaAscensor=false;PonerJugador(new Vector2(23.05f,15.05f));}
+        else PonerJugador(GradasMezanine[lado]);
     }
 
     void PrepararMezanine()
@@ -1743,13 +1847,37 @@ public partial class DirectorCampus : MonoBehaviour
 
         PrepararPiso(n);
         PrepararAulas(n);
-        PuntoPiso("ascensor", "Usar ascensor", new Vector2(18.3f, 5.4f), 1.45f);
+        ColisionesCampus.UnirParedesDePiso(marcoGo.transform);
+        // Resolve the stair landing again after combining the wall geometry.
+        if(llegadaAscensor){llegadaAscensor=false;PonerJugador(AscensorSuperior);}
+        else PonerJugador(jugador.transform.position);
+    }
+
+    void CrearTerminalAscensor()
+    {
+        var tex=new Texture2D(32,40,TextureFormat.RGBA32,false);tex.filterMode=FilterMode.Point;
+        var pixels=new Color[32*40];
+        for(int y=0;y<40;y++)for(int x=0;x<32;x++){
+            Color c=new Color(.18f,.19f,.3f);
+            if(x<2 || x>29 || y<2 || y>37)c=new Color(.66f,.6f,.8f);
+            else if(y>29)c=new Color(.96f,.56f,.18f);
+            else if(x>4 && x<26 && y>5 && y<28)c=new Color(.40f,.58f,.63f);
+            if(x>=15 && x<=16 && y>5 && y<28)c=new Color(.14f,.18f,.26f);
+            pixels[y*32+x]=c;
+        }
+        tex.SetPixels(pixels);tex.Apply();
+        var go=new GameObject("Ascensor - terminal de llamada");go.transform.SetParent(interiorGo.transform,false);
+        go.transform.position=AscensorSuperior+new Vector2(.55f,.45f);
+        var sr=go.AddComponent<SpriteRenderer>();sr.sprite=RecursosCampus.ComoSprite(tex,48,new Vector2(.5f,0));sr.sortingOrder=95;
+
     }
 
     void PrepararPiso(int n)
     {
         puntosPiso.Clear();
         if (interiorGo == null) return;
+        PuntoPiso("ascensor","Ascensor",AscensorSuperior,1.9f);
+        CrearTerminalAscensor();
 
         if (n == 2)
         {
@@ -1973,8 +2101,8 @@ public partial class DirectorCampus : MonoBehaviour
     void SoltarInterior()
     {
         DescartarExteriorAcademico();
-        if (interiorGo != null) Destroy(interiorGo);
-        if (marcoGo != null) Destroy(marcoGo);
+        if (interiorGo != null){interiorGo.SetActive(false);Destroy(interiorGo);}
+        if (marcoGo != null){marcoGo.SetActive(false);Destroy(marcoGo);}
         interiorGo = null;
         marcoGo = null;
         gradasPiso.Clear();
@@ -2042,7 +2170,7 @@ public partial class DirectorCampus : MonoBehaviour
         SalirSala();
         Teñir(true);
         if (npcsGo != null) npcsGo.SetActive(false);
-        PonerJugador(Celda(15, 2));
+        PonerJugador(AscensorPB);
     }
 
     public void DialogoPisoSiete(string titulo, string cuerpo)
@@ -2083,8 +2211,8 @@ public partial class DirectorCampus : MonoBehaviour
         salaId = "";
         pisoNumero = 0;
         if (jugador != null) jugador.transform.localScale = Vector3.one;
-        if (interiorGo != null) Destroy(interiorGo);
-        if (marcoGo != null) Destroy(marcoGo);
+        if (interiorGo != null){interiorGo.SetActive(false);Destroy(interiorGo);}
+        if (marcoGo != null){marcoGo.SetActive(false);Destroy(marcoGo);}
         interiorGo = null;
         marcoGo = null;
         if (mapaGo != null) mapaGo.SetActive(true);
@@ -2098,6 +2226,9 @@ public partial class DirectorCampus : MonoBehaviour
     {
         if (jugador == null) return;
         jugador.Detener();
+        jugador.SincronizarPies();
+        Physics2D.SyncTransforms();
+        sitio=jugador.BuscarLugarLibre(sitio,new Vector2(dentro?salaAncho:40f,dentro?salaAlto:20f));
         jugador.transform.position = sitio;
         var cuerpo = jugador.GetComponent<Rigidbody2D>();
         if (cuerpo != null) cuerpo.position = sitio;
