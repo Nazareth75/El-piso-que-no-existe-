@@ -83,7 +83,12 @@ public partial class DirectorCampus : MonoBehaviour
     bool pidioPlantaBaja;
     bool desmayando;
     public float negro;
-    public bool BotonXListo { get; private set; }
+    bool pisoXAbierto;
+    public bool BotonXListo
+    {
+        get => pisoXAbierto || EstadoPartida.DecisionesListas;
+        private set => pisoXAbierto = value;
+    }
     readonly List<Vector2> gradasPiso = new List<Vector2>();
     readonly List<PuntoCampus> puntosPiso = new List<PuntoCampus>();
     static readonly Vector2 PuertaBibliotecaPiso = new Vector2(14.06f, 10.39f);
@@ -420,7 +425,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     public void EntrarAlPiso()
     {
-        if (!BotonXListo && (!EstadoPartida.desperto || !EstadoPartida.sistemasListo)) return;
+        if (!BotonXListo) return;
         panel = PanelCampus.Ninguno;
         EntrarPisoX();
     }
@@ -446,7 +451,7 @@ public partial class DirectorCampus : MonoBehaviour
     {
         if (piso == "X")
         {
-            if (!BotonXListo && (!EstadoPartida.desperto || !EstadoPartida.sistemasListo))
+            if (!BotonXListo)
             {
                 aviso = "El piso 7 todavía no está disponible. Sigue la pista del ascensor.";
                 return;
@@ -505,11 +510,12 @@ public partial class DirectorCampus : MonoBehaviour
             if (EstadoPartida.sistemas == 0)
             {
                 EstadoPartida.sistemas = 1;
-                EstadoPartida.sistemasListo = true;
             }
+            EstadoPartida.sistemasListo = true;
 
             avisoPisoX = true;
-            aviso = "El siete no está. Aparece PISO X. El color de ese piso no es el de la universidad.";
+            aviso = BotonXListo ? "El siete no está. Pulsa X para entrar al piso que no existe."
+                : "Encontraste el piso que falta. Termina la misión de la clínica y vuelve al ascensor.";
             return;
         }
 
@@ -517,7 +523,7 @@ public partial class DirectorCampus : MonoBehaviour
         aviso = "Ese piso existe. El que buscas no tiene botón.";
     }
 
-    public bool MostrarPisoX => BotonXListo || avisoPisoX || EstadoPartida.sistemasListo;
+    public bool MostrarPisoX => BotonXListo;
 
     void Usar(string id)
     {
@@ -1737,6 +1743,7 @@ public partial class DirectorCampus : MonoBehaviour
 
         PrepararPiso(n);
         PrepararAulas(n);
+        PuntoPiso("ascensor", "Usar ascensor", new Vector2(18.3f, 5.4f), 1.45f);
     }
 
     void PrepararPiso(int n)
