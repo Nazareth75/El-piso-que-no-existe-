@@ -1,0 +1,31 @@
+PISOS 2, 3, 4 Y 5 — PLANOS E INTERIORES
+
+Los cuatro mapas utilizan los PNG originales proporcionados por el usuario,
+en su resolución original (1672/1671 x 941). No se redibujaron.
+
+La imagen de 2172 x 724 de aula, laboratorio y clínica está en
+Assets/StreamingAssets/Interiores/aulas_laboratorio_clinica.png.
+Unity utiliza cada uno de sus tres paneles completos como un interior independiente.
+
+SALAS CONECTADAS
+Piso 2: 5 aulas y 7 laboratorios, incluidos Sala MAC, software y postgrado.
+Piso 3: 10 aulas y semiología, que utiliza el panel de clínica universitaria.
+Piso 4: 10 aulas.
+Piso 5: 8 aulas. La biblioteca mantiene su interior y su recorrido existentes.
+Total: 41 entradas. Los números de aula identifican las salas del juego;
+las imágenes originales solamente las rotulan como AULA.
+
+Acércate a la puerta desde el pasillo y pulsa E para entrar.
+WASD o flechas para recorrer la sala. Los muebles tienen colisiones.
+E junto al equipo permite consultar la actividad; E junto al material permite recogerlo.
+Vuelve a la puerta inferior y pulsa E, o camina hacia la salida, para volver
+al mismo pasillo y a la misma posición por la que entraste.
+Los materiales recogidos se conservan durante la partida; una nueva partida los reinicia.
+
+PRUEBAS RÁPIDAS EN UNITY
+Menú Pisos 2-5: elegir un piso, ver cada tipo de interior o validar las 41 entradas.
+La validación comprueba el panel original, los pasos entre muebles, actividad,
+recogida sin duplicados y regreso al piso correcto.
+
+El catálogo de puertas es Assets/StreamingAssets/Pisos/aulas.json.
+Tools/preparar_aulas.py verifica su acceso desde los pasillos y regenera el catálogo.

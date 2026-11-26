@@ -83,8 +83,10 @@ public class InterfazCampus : MonoBehaviour
         float ancho = Screen.width / escala;
         float alto = Screen.height / escala;
 
-        if (juego.jugando && juego.panel != PanelCampus.Menu && juego.panel != PanelCampus.Intro)
+        if (juego.jugando && juego.panel != PanelCampus.Menu && juego.panel != PanelCampus.Intro && !juego.EnAulaAcademica)
             Hud(juego, ancho);
+
+        if (juego.EnAulaAcademica) juego.DibujarAulaAcademica(ancho, alto);
 
         switch (juego.panel)
         {
@@ -122,6 +124,9 @@ public class InterfazCampus : MonoBehaviour
 
         if (juego.jugando && juego.panel == PanelCampus.Ninguno)
             Prompt(juego, ancho, alto);
+
+        if (EstadoPartida.enPisoX && juego.NivelSiete != null)
+            juego.NivelSiete.Dibujar(ancho, alto);
 
         if (juego.negro > 0.01f)
         {
@@ -169,7 +174,7 @@ public class InterfazCampus : MonoBehaviour
             Relleno(new Rect(18f, 68f, 216f * lleno, 10f), new Color(0.25f, 0.85f, 1f, 0.95f));
         }
 
-        if (objetosArt != null)
+        if (objetosArt != null && !EstadoPartida.enPisoX)
             PonerArte(objetosArt, ancho - 284f, 8f, 272f);
 
         string rumbo = "Sistemas " + EstadoPartida.sistemas + "   Medicina " + EstadoPartida.medicina + "   " + EstadoPartida.NombreTercera;
@@ -302,7 +307,7 @@ public class InterfazCampus : MonoBehaviour
     {
         Velo(ancho, alto, 0.35f);
         float y = 70f;
-        bool cajaDiseno = dialogoArt != null && juego.fraseTitulo != "CÓMO MOVERTE";
+        bool cajaDiseno = dialogoArt != null && juego.fraseTitulo != "CÓMO MOVERTE" && !EstadoPartida.enPisoX;
         var tex = cajaDiseno ? null : juego.Tarjeta(juego.fraseTarjeta);
         if (tex != null)
         {
@@ -331,7 +336,7 @@ public class InterfazCampus : MonoBehaviour
             return;
         }
 
-        float altoTexto = Mathf.Clamp(cuerpo.CalcHeight(new GUIContent(juego.fraseCuerpo), 560f) + 8f, 70f, 220f);
+        float altoTexto = Mathf.Clamp(cuerpo.CalcHeight(new GUIContent(juego.fraseCuerpo), 560f) + 8f, 70f, EstadoPartida.enPisoX ? 400f : 220f);
         float altoCaja = Mathf.Max(210f, 70f + altoTexto + 64f);
         if (juego.fraseTitulo == "CÓMO MOVERTE")
             y = (alto - altoCaja) * 0.5f;
@@ -469,7 +474,7 @@ public class InterfazCampus : MonoBehaviour
         bool piso = EstadoPartida.enPisoX;
         GUI.Label(new Rect(caja.x, caja.y + 20f, caja.width, 40f), piso ? "Una entidad te alcanzó" : "La presencia te alcanzó", titulo);
         GUI.Label(new Rect(caja.x + 24f, caja.y + 80f, caja.width - 48f, 60f), piso
-            ? "Repites solo el piso que no existe. Sistemas y Medicina se quedan como estaban."
+            ? "Vuelves al ascensor con la vida completa. Conservas los objetos recogidos y las misiones completadas."
             : "Repites solo la huida. Sistemas y Medicina se quedan como estaban.", cuerpo);
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
         if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 100f, caja.yMax - 64f, 200f, 44f), "Reintentar", boton))
@@ -481,7 +486,7 @@ public class InterfazCampus : MonoBehaviour
     {
         bool cruzo = EstadoPartida.pisoCruzado;
         string resumen = (cruzo
-                ? "Cruzaste el círculo del centro. Ese piso es el Proyecto 07.\n\n"
+                ? "Proyecto 07 completado: energía restaurada, paciente a salvo, evidencia transmitida y salida reforzada.\nMisiones del piso 7: " + EstadoPisoSiete.misiones.Count + "/6.\n\n"
                 : "El ascensor sigue sin un piso 7.\n\n") +
             "Sistemas: " + EstadoPartida.sistemas + "    Medicina: " + EstadoPartida.medicina + "\n" +
             "Tercera: " + EstadoPartida.NombreTercera + "\n" +

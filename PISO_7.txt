@@ -1,0 +1,42 @@
+PISO 7 — PROYECTO 07
+
+Para probarlo directamente en Unity:
+Menú superior > Piso 7 > Probar desde el ascensor.
+Esto inicia una partida de prueba nueva en Campus.unity.
+La entrada normal sigue siendo el botón X del ascensor, después del recorrido de la biblioteca.
+
+CONTROLES
+WASD o flechas: caminar. Shift: correr.
+E: hablar, recoger objetos, usar terminales y ascensor.
+Espacio: pulso del aturdidor (debes recogerlo; consume 25 de aire).
+I: inventario y misiones. M: plano. H: botiquín. Esc: cerrar panel o pausar.
+
+RECORRIDO
+1. Sal del ascensor por la puerta lateral superior derecha. Sigue el pasillo hasta el centro.
+2. Recoge fusible y anclajes en ingeniería, abajo a la derecha.
+3. En energía, arriba al centro, conecta CIAN, MAGENTA y VERDE.
+4. Ayuda a Vera en la clínica, arriba a la izquierda. Recibe reactivo y material para muestras.
+5. Recupera tarjeta y registro en el archivo, a la izquierda del núcleo.
+6. Recoge la muestra sellada al sureste del núcleo y neutralízala en el laboratorio superior derecho.
+7. Transmite la evidencia desde streaming, abajo a la izquierda.
+8. Instala los anclajes en ingeniería y vuelve al núcleo para confirmar la salida.
+
+SUPERVIVENCIA
+Cinco criaturas animadas patrullan y persiguen por puertas; las paredes bloquean su visión.
+El antídoto reduce velocidad y detección. El pulso las aturde durante tres segundos.
+Los suministros de la sala central derecha contienen un escudo y un botiquín.
+Después del rescate, la clínica restaura la vida. La energía apaga la descarga eléctrica;
+el antídoto elimina la fuga tóxica.
+Al morir regresas al ascensor con vida completa, conservando objetos y misiones.
+El inventario es de la partida actual: volver al menú o iniciar otra partida lo reinicia.
+
+RECURSOS
+Se reutilizó el escenario fondo_piso_x.png del ZIP Piso_X_bots y los cinco monstruos
+del Pack_Piso_X. Los diseños de UI ya estaban presentes en StreamingAssets/Ui.
+Los PNG originales se conservan; los sprites se recortan por código sin alterar sus diseños.
+
+VALIDACIÓN
+Piso 7 > Validar recorrido completo comprueba la cadena de misiones, restricciones,
+secuencia de cables, inventario, final, reintento y reinicio dentro de Play Mode.
+python Tools/validar_piso7.py comprueba colisiones y acceso a todas las interacciones,
+incluyendo el tamaño y desplazamiento reales del collider del jugador.
