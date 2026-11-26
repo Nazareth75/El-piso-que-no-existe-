@@ -84,7 +84,7 @@ public class DirectorCampus : MonoBehaviour
     public bool BotonXListo { get; private set; }
     readonly List<Vector2> gradasPiso = new List<Vector2>();
     readonly List<PuntoCampus> puntosPiso = new List<PuntoCampus>();
-    static readonly Vector2 PuertaBibliotecaPiso = new Vector2(18.46f, 11.55f);
+    static readonly Vector2 PuertaBibliotecaPiso = new Vector2(14.06f, 10.39f);
     static readonly Vector2 SpawnBiblioteca = new Vector2(19.06f, 3.2f);
     static readonly Vector2 SalidaBiblioteca = new Vector2(19.06f, 2.23f);
 
@@ -267,20 +267,20 @@ public class DirectorCampus : MonoBehaviour
             if (salaId == "piso")
             {
                 PuntoCampus cerca = null;
-                float limite = 3.1f;
+                float limite = 1.45f;
                 for (int i = 0; i < gradasPiso.Count; i++)
                 {
                     float distancia = Vector2.Distance(aqui, gradasPiso[i]);
-                    if (distancia > limite) continue;
+                    if (distancia > 1.45f || distancia >= limite) continue;
                     limite = distancia;
-                    cerca = new PuntoCampus { id = "gradasPiso", nombre = "gradas", posicion = gradasPiso[i], radio = 3.1f, lado = i };
+                    cerca = new PuntoCampus { id = "gradasPiso", nombre = "gradas", posicion = gradasPiso[i], radio = 1.45f, lado = i };
                 }
 
                 if (pisoNumero == 5)
                 {
                     float distanciaPuerta = Vector2.Distance(aqui, PuertaBibliotecaPiso);
-                    if (distanciaPuerta <= 1.8f && (cerca == null || distanciaPuerta < limite))
-                        cerca = new PuntoCampus { id = "biblioteca", nombre = "Biblioteca", posicion = PuertaBibliotecaPiso, radio = 1.8f };
+                    if (distanciaPuerta <= 1.35f && (cerca == null || distanciaPuerta < limite))
+                        cerca = new PuntoCampus { id = "biblioteca", nombre = "Biblioteca", posicion = PuertaBibliotecaPiso, radio = 1.35f };
                 }
 
                 foreach (var punto in puntosPiso)
@@ -762,6 +762,71 @@ public class DirectorCampus : MonoBehaviour
                 Decir("INGENIERÍA", EstadoPartida.desperto
                     ? "La Facultad de Ingeniería está vacía."
                     : "Facultad de Ingeniería. Aquí están las carreras de ingeniería.", "");
+                break;
+            case "software":
+                Decir("CENTRO DE SOFTWARE", EstadoPartida.desperto
+                    ? "El centro de desarrollo de software está apagado."
+                    : "Centro de desarrollo de software. Aquí se programan los proyectos de este piso.", "");
+                break;
+            case "labcomp":
+                Decir("LABORATORIO", EstadoPartida.desperto
+                    ? "El laboratorio de computación está vacío."
+                    : "Laboratorio de computación. Estas máquinas son para las clases de este piso.", "");
+                break;
+            case "informatica":
+                Decir("INFORMÁTICA", EstadoPartida.desperto
+                    ? "El laboratorio de informática está cerrado."
+                    : "Laboratorio de informática. Aquí están los equipos de este piso.", "");
+                break;
+            case "sonido":
+                Decir("SALA DE SONIDO", EstadoPartida.desperto
+                    ? "La sala de sonido está apagada."
+                    : "Sala de sonido. Aquí se usan los equipos de audio.", "");
+                break;
+            case "streaming":
+                Decir("SALA DE STREAMING", EstadoPartida.desperto
+                    ? "La sala de streaming está apagada."
+                    : "Sala de streaming. Desde aquí se graban las clases.", "");
+                break;
+            case "deposito":
+                Decir("DEPÓSITO", EstadoPartida.desperto
+                    ? "El depósito está cerrado."
+                    : "Depósito de este piso. Aquí se guardan los materiales.", "");
+                break;
+            case "semiologia":
+                Decir("SEMIOLOGÍA", EstadoPartida.desperto
+                    ? "La sala de semiología está vacía."
+                    : "Sala de semiología. Aquí son las prácticas de este piso.", "");
+                break;
+            case "consultorio":
+                Decir("CONSULTORIO EMPRESARIAL", EstadoPartida.desperto
+                    ? "El consultorio empresarial está cerrado."
+                    : "Consultorio empresarial. Aquí se atienden los proyectos de empresa.", "");
+                break;
+            case "camara":
+                Decir("CÁMARA", EstadoPartida.desperto
+                    ? "La cámara está apagada. No hay sesión."
+                    : "Cámara de este piso. Sirve para las observaciones y las prácticas.", "");
+                break;
+            case "daf":
+                Decir("ALMACÉN DAF", EstadoPartida.desperto
+                    ? "El almacén DAF está cerrado."
+                    : "Almacén DAF. Aquí se guardan los materiales de este piso.", "");
+                break;
+            case "docentes":
+                Decir("SALA DE DOCENTES", EstadoPartida.desperto
+                    ? "La sala de docentes está vacía."
+                    : "Sala de docentes. Aquí atienden los profesores de este piso.", "");
+                break;
+            case "adquisiciones":
+                Decir("ADQUISICIONES", EstadoPartida.desperto
+                    ? "Adquisiciones y almacén están cerrados."
+                    : "Adquisiciones y almacén. Aquí se reciben los materiales del piso.", "");
+                break;
+            case "nacional":
+                Decir("OFICINA NACIONAL", EstadoPartida.desperto
+                    ? "La oficina nacional está cerrada."
+                    : "Oficina nacional. Desde aquí se coordinan los trámites de este piso.", "");
                 break;
         }
     }
@@ -1642,7 +1707,6 @@ public class DirectorCampus : MonoBehaviour
         Borde(salaAncho - 0.4f, salaAlto * 0.5f, 0.8f, salaAlto);
         Borde(salaAncho * 0.5f, salaAlto - 0.4f, salaAncho, 0.8f);
         Borde(salaAncho * 0.5f, 0.4f, salaAncho, 0.8f);
-        if (n == 5) PonerPuertaBiblioteca();
         if (jugador != null) jugador.transform.localScale = Vector3.one;
         if (aparecerEnPuerta && n == 5)
         {
@@ -1662,25 +1726,71 @@ public class DirectorCampus : MonoBehaviour
     void PrepararPiso(int n)
     {
         puntosPiso.Clear();
-        if (n != 2 || interiorGo == null) return;
+        if (interiorGo == null) return;
 
-        var arca = new Vector2(2.88f, 6.54f);
-        var gaming = new Vector2(3.08f, 17.88f);
-        var mac = new Vector2(30.19f, 9.81f);
-        var foto = new Vector2(35.19f, 8.08f);
-        var aula = new Vector2(10.96f, 8.27f);
-        var bano = new Vector2(24.81f, 8.65f);
-        PuntoPiso("arca", "ARCA", arca, 1.7f);
-        PuntoPiso("gaming", "Gaming y sonido", gaming, 1.7f);
-        PuntoPiso("mac", "Sala MAC", mac, 1.7f);
-        PuntoPiso("fotocopia", "Fotocopia", foto, 1.7f);
-        PuntoPiso("aula2", "Aula grande", aula, 1.7f);
-        PuntoPiso("bano2", "Baños", bano, 1.6f);
-        Habitante("admisiones", arca);
-        Habitante("game_room", gaming);
-        Habitante("estudiante_sentado", mac);
-        Habitante("estudiante_mujer", aula);
-        Habitante("estudiante_caminando", foto);
+        if (n == 2)
+        {
+            PuntoPiso("mac", "Sala MAC", new Vector2(6.64f, 14.26f), 1.05f);
+            PuntoPiso("software", "Centro de software", new Vector2(12.89f, 14.26f), 1.15f);
+            PuntoPiso("labcomp", "Lab. de computación", new Vector2(22.34f, 14.3f), 1.05f);
+            PuntoPiso("labcomp", "Lab. de computación", new Vector2(26.45f, 14.3f), 1.05f);
+            PuntoPiso("informatica", "Lab. de informática", new Vector2(30.66f, 14.3f), 1.05f);
+            PuntoPiso("sonido", "Sala de sonido", new Vector2(7.8f, 13.2f), 1f);
+            PuntoPiso("postgrado", "Lab. de postgrado", new Vector2(6.56f, 11.95f), 1f);
+            PuntoPiso("streaming", "Sala de streaming", new Vector2(8f, 6.6f), 1.1f);
+            PuntoPiso("deposito", "Depósito", new Vector2(31.6f, 4.9f), 1.05f);
+            Habitante("estudiante_sentado", new Vector2(6.64f, 14.26f));
+            Habitante("game_room", new Vector2(12.89f, 14.26f));
+            Habitante("estudiante_mujer", new Vector2(7.8f, 13.2f));
+            Habitante("admisiones", new Vector2(31.6f, 4.9f));
+            Caminante("estudiante_caminando", new Vector2(10.35f, 12.5f), new Vector2(18f, 12f), new Vector2(25.94f, 12f));
+        }
+        else if (n == 3)
+        {
+            PuntoPiso("semiologia", "Sala de semiología", new Vector2(6.52f, 14.92f), 1.15f);
+            PuntoPiso("arca", "Depósito ARCA", new Vector2(7.03f, 8.01f), 1.15f);
+            PuntoPiso("fotocopia", "Fotocopia", new Vector2(36.05f, 9.22f), 1.15f);
+            PuntoPiso("deposito", "Depósito", new Vector2(31.8f, 4.6f), 1.05f);
+            Habitante("odontologa", new Vector2(6.52f, 14.92f));
+            Habitante("admisiones", new Vector2(7.03f, 8.01f));
+            Habitante("gestion_financiera", new Vector2(36.05f, 9.22f));
+            Caminante("estudiante_caminando", new Vector2(10.12f, 12.19f), new Vector2(17.77f, 12.15f), new Vector2(26f, 12f));
+        }
+        else if (n == 4)
+        {
+            PuntoPiso("consultorio", "Consultorio empresarial", new Vector2(4.18f, 8.79f), 1.15f);
+            PuntoPiso("camara", "Cámara", new Vector2(21.09f, 12.11f), 1.05f);
+            PuntoPiso("daf", "Almacén DAF", new Vector2(25.27f, 11.76f), 1.05f);
+            PuntoPiso("docentes", "Sala de docentes", new Vector2(31.05f, 7.38f), 1.15f);
+            PuntoPiso("deposito", "Depósito", new Vector2(31.5f, 4.7f), 1.05f);
+            Habitante("expositor", new Vector2(4.18f, 8.79f));
+            Habitante("recepcionista", new Vector2(31.05f, 7.38f));
+            Habitante("servicios_estudiantiles", new Vector2(25.27f, 11.76f));
+            Caminante("estudiante_mujer", new Vector2(9.92f, 12.11f), new Vector2(17.85f, 12.15f), new Vector2(26f, 12f));
+        }
+        else if (n == 5)
+        {
+            PuntoPiso("adquisiciones", "Adquisiciones y almacén", new Vector2(6.76f, 5.74f), 1.15f);
+            PuntoPiso("nacional", "Oficina nacional", new Vector2(34.49f, 7.19f), 1.15f);
+            Habitante("estudiante_sentado", new Vector2(14.06f, 10.39f));
+            Habitante("gestion_financiera", new Vector2(6.76f, 5.74f));
+            Habitante("admisiones", new Vector2(34.49f, 7.19f));
+            Caminante("estudiante_caminando", new Vector2(17.85f, 12.15f), new Vector2(26f, 12f), new Vector2(34.49f, 7.19f));
+        }
+    }
+
+    void Caminante(string carpeta, params Vector2[] ruta)
+    {
+        if (ruta == null || ruta.Length == 0 || interiorGo == null) return;
+        var go = new GameObject(carpeta);
+        go.transform.SetParent(interiorGo.transform);
+        go.transform.position = ruta[0];
+        var dibujo = go.AddComponent<SpriteRenderer>();
+        var npc = go.AddComponent<NpcCampus>();
+        npc.frames = RecursosCampus.Carpeta(carpeta, 48f);
+        npc.camina = ruta.Length > 1;
+        npc.ruta = ruta;
+        if (npc.frames != null && npc.frames.Length > 0) dibujo.sprite = npc.frames[0];
     }
 
     void PuntoPiso(string id, string nombre, Vector2 posicion, float radio)
@@ -1802,6 +1912,14 @@ public class DirectorCampus : MonoBehaviour
         {
             if (string.IsNullOrWhiteSpace(lineas[i])) continue;
             var parte = lineas[i].Split(' ');
+            if (parte[0] == "grada" && parte.Length >= 3)
+            {
+                float px = float.Parse(parte[1], cultura);
+                float py = float.Parse(parte[2], cultura);
+                gradasPiso.Add(new Vector2(px / pixelesAncho * salaAncho, (pixelesAlto - py) / pixelesAlto * salaAlto));
+                continue;
+            }
+
             if (parte[0] == "stair" && parte.Length >= 3)
             {
                 float ux = float.Parse(parte[1], cultura);
