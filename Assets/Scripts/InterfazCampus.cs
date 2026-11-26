@@ -6,6 +6,7 @@ public class InterfazCampus : MonoBehaviour
     GUIStyle cuerpo;
     GUIStyle boton;
     GUIStyle pequeño;
+    GUIStyle hudTexto;
     GUIStyle vacio;
     Texture2D blanco;
     Texture2D menuArt;
@@ -56,6 +57,11 @@ public class InterfazCampus : MonoBehaviour
         pequeño = new GUIStyle(cuerpo);
         pequeño.fontSize = 16;
         pequeño.alignment = TextAnchor.MiddleCenter;
+
+        hudTexto = new GUIStyle(cuerpo);
+        hudTexto.fontSize = 14;
+        hudTexto.alignment = TextAnchor.UpperLeft;
+        hudTexto.wordWrap = true;
 
         boton = new GUIStyle(GUI.skin.button);
         boton.fontSize = 18;
@@ -119,55 +125,45 @@ public class InterfazCampus : MonoBehaviour
 
         if (juego.GritoVisible)
         {
-            var caja = new Rect(ancho * 0.25f, alto * 0.16f, ancho * 0.5f, 90f);
-            if (avisoArt != null)
-                GUI.DrawTexture(caja, avisoArt, ScaleMode.StretchToFill, true);
-            else
-                Relleno(caja, new Color(0.35f, 0.08f, 0.12f, 0.92f));
+            var caja = new Rect(ancho * 0.22f, alto * 0.16f, ancho * 0.56f, 52f);
+            Relleno(caja, new Color(0.35f, 0.08f, 0.12f, 0.96f));
+            Borde(caja, new Color(0.95f, 0.48f, 0.12f));
             GUI.Label(caja, juego.grito, pequeño);
         }
     }
 
     void Hud(DirectorCampus juego, float ancho)
     {
+        float bajo = 64f;
         if (objetivoArt != null)
         {
-            var barra = new Rect(12f, 8f, 420f, 118f);
-            GUI.DrawTexture(barra, objetivoArt, ScaleMode.StretchToFill, true);
-            var texto = new Rect(barra.x + 54f, barra.y + 46f, barra.width - 70f, 62f);
-            Relleno(texto, new Color(0.03f, 0.04f, 0.1f, 0.82f));
-            GUI.Label(texto, EstadoPartida.Objetivo(), cuerpo);
-        }
-        else
-        {
-            var barra = new Rect(16f, 12f, ancho - 32f, 36f);
-            Relleno(barra, new Color(0.06f, 0.08f, 0.14f, 0.88f));
-            Borde(barra, new Color(0.95f, 0.48f, 0.12f));
-            GUI.Label(barra, EstadoPartida.Objetivo(), pequeño);
+            var barra = PonerArte(objetivoArt, 12f, 8f, 440f);
+            var texto = Trozo(barra, objetivoArt, 58f, 40f, 230f, 38f);
+            Relleno(texto, new Color(0.012f, 0.07f, 0.176f, 1f));
+            GUI.Label(new Rect(texto.x + 6f, texto.y + 4f, texto.width - 10f, texto.height - 8f), EstadoPartida.Objetivo(), hudTexto);
+            bajo = barra.yMax + 4f;
         }
 
         if (vidaArt != null)
         {
-            var vida = new Rect(12f, 132f, 250f, 84f);
-            GUI.DrawTexture(vida, vidaArt, ScaleMode.StretchToFill, true);
+            var vida = PonerArte(vidaArt, 12f, bajo, 250f);
             float lleno = Mathf.Clamp01(juego.estamina / 100f);
-            var hueco = new Rect(vida.x + vida.width * 0.36f, vida.y + vida.height * 0.58f, vida.width * 0.56f, vida.height * 0.18f);
-            Relleno(hueco, new Color(0.02f, 0.04f, 0.08f, 0.85f));
-            Relleno(new Rect(hueco.x, hueco.y, hueco.width * lleno, hueco.height), new Color(0.25f, 0.9f, 1f, 0.95f));
+            var hueco = Trozo(vida, vidaArt, 102f, 53f, 148f, 13f);
+            Relleno(hueco, new Color(0.01f, 0.06f, 0.2f, 1f));
+            Relleno(new Rect(hueco.x, hueco.y, hueco.width * lleno, hueco.height), new Color(0.05f, 0.85f, 0.95f, 1f));
         }
         else
         {
-            Relleno(new Rect(16f, 56f, 204f, 16f), new Color(0f, 0f, 0f, 0.55f));
-            Relleno(new Rect(18f, 58f, 2f * juego.estamina, 12f), new Color(0.35f, 0.85f, 0.95f, 0.95f));
-            GUI.Label(new Rect(16f, 72f, 200f, 22f), "Aire al correr", pequeño);
+            float lleno = Mathf.Clamp01(juego.estamina / 100f);
+            Relleno(new Rect(16f, 66f, 220f, 14f), new Color(0f, 0f, 0f, 0.7f));
+            Relleno(new Rect(18f, 68f, 216f * lleno, 10f), new Color(0.25f, 0.85f, 1f, 0.95f));
         }
 
         if (objetosArt != null)
-            GUI.DrawTexture(new Rect(ancho - 280f, 8f, 268f, 96f), objetosArt, ScaleMode.StretchToFill, true);
+            PonerArte(objetosArt, ancho - 284f, 8f, 272f);
 
         string rumbo = "Sistemas " + EstadoPartida.sistemas + "   Medicina " + EstadoPartida.medicina + "   " + EstadoPartida.NombreTercera;
-        var esquina = new Rect(ancho - 460f, objetosArt != null ? 108f : 54f, 444f, 28f);
-        GUI.Label(esquina, rumbo, pequeño);
+        GUI.Label(new Rect(ancho - 520f, objetosArt != null ? 112f : 66f, 500f, 24f), rumbo, pequeño);
     }
 
     void Prompt(DirectorCampus juego, float ancho, float alto)
@@ -190,11 +186,6 @@ public class InterfazCampus : MonoBehaviour
                 GUI.Label(flotante, texto, pequeño);
             }
         }
-
-        var caja = new Rect(ancho * 0.3f, alto - 90f, ancho * 0.4f, 48f);
-        Relleno(caja, new Color(0.06f, 0.08f, 0.14f, 0.94f));
-        Borde(caja, new Color(0.95f, 0.48f, 0.12f));
-        GUI.Label(caja, texto, pequeño);
     }
 
     void Menu(DirectorCampus juego, float ancho, float alto)
@@ -261,24 +252,31 @@ public class InterfazCampus : MonoBehaviour
 
     void Tutorial(DirectorCampus juego, float ancho, float alto)
     {
-        var caja = CajaCentral(ancho, alto, 680f, 420f);
-        float yTexto = caja.y + 16f;
+        if (dialogoArt == null)
+        {
+            var caja = new Rect(ancho * 0.5f - 320f, alto * 0.5f - 120f, 640f, 240f);
+            Relleno(caja, new Color(0.05f, 0.04f, 0.12f, 0.97f));
+            Borde(caja, new Color(0.55f, 0.35f, 0.95f));
+            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
+            if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 110f, caja.yMax - 64f, 220f, 44f), "Entendido", boton))
+                juego.Entendido();
+            GUI.backgroundColor = Color.white;
+            return;
+        }
+
+        Velo(ancho, alto, 0.4f);
+        float anchoDialogo = Mathf.Min(760f, ancho * 0.9f);
+        float altoDialogo = anchoDialogo * dialogoArt.height / dialogoArt.width;
+        float y = (alto - altoDialogo) * 0.5f - 20f;
         if (tutorArt != null)
         {
-            var tutor = new Rect(caja.x + 16f, caja.y + 12f, caja.width - 32f, 96f);
-            GUI.DrawTexture(tutor, tutorArt, ScaleMode.StretchToFill, true);
-            yTexto = tutor.yMax + 8f;
+            var tutor = PonerArte(tutorArt, ancho * 0.5f - 280f, 16f, 560f);
+            y = tutor.yMax + 8f;
         }
-        else
-        {
-            GUI.Label(new Rect(caja.x, caja.y + 12f, caja.width, 40f), "Cómo moverte", titulo);
-            yTexto = caja.y + 64f;
-        }
-        GUI.Label(new Rect(caja.x + 28f, yTexto, caja.width - 56f, caja.yMax - yTexto - 72f),
-            "Ves el campus desde arriba, como el plano.\n\nFlechas o W A S D: caminar\nShift: correr. La barra de aire se gasta.\nE: hablar, leer y usar la huella\nEn la clínica: 1 ayudar, 2 seguir de largo\nEsc: pausa\n\nSi la presencia te alcanza, repites solo esa huida. Tus carreras se conservan.",
-            cuerpo);
+        var puesta = new Rect(ancho * 0.5f - anchoDialogo * 0.5f, y, anchoDialogo, altoDialogo);
+        GUI.DrawTexture(puesta, dialogoArt, ScaleMode.StretchToFill, true);
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-        if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 110f, caja.yMax - 64f, 220f, 44f), "Entendido", boton))
+        if (GUI.Button(new Rect(puesta.x + puesta.width * 0.5f - 110f, puesta.yMax + 8f, 220f, 42f), "Entendido", boton))
             juego.Entendido();
         GUI.backgroundColor = Color.white;
     }
@@ -287,7 +285,8 @@ public class InterfazCampus : MonoBehaviour
     {
         Velo(ancho, alto, 0.35f);
         float y = 70f;
-        var tex = juego.Tarjeta(juego.fraseTarjeta);
+        bool cajaDiseno = dialogoArt != null && juego.fraseTitulo != "CÓMO MOVERTE";
+        var tex = cajaDiseno ? null : juego.Tarjeta(juego.fraseTarjeta);
         if (tex != null)
         {
             var zona = new Rect(ancho * 0.5f - 300f, y, 600f, 180f);
@@ -295,21 +294,37 @@ public class InterfazCampus : MonoBehaviour
             y += 190f;
         }
 
-        float altoTexto = Mathf.Clamp(cuerpo.CalcHeight(new GUIContent(juego.fraseCuerpo), 380f) + 8f, 70f, 220f);
-        float altoCaja = Mathf.Max(210f, 70f + altoTexto + 64f);
-        if (y + altoCaja > alto - 12f) y = Mathf.Max(12f, alto - 12f - altoCaja);
-        var caja = new Rect(ancho * 0.5f - 340f, y, 680f, altoCaja);
-        if (dialogoArt != null)
-            GUI.DrawTexture(caja, dialogoArt, ScaleMode.StretchToFill, true);
-        else
+        if (cajaDiseno)
         {
-            Relleno(caja, new Color(0.07f, 0.09f, 0.16f, 0.94f));
-            Borde(caja, new Color(0.95f, 0.48f, 0.12f));
+            float anchoDialogo = Mathf.Min(680f, ancho * 0.78f);
+            float altoDialogo = anchoDialogo * dialogoArt.height / dialogoArt.width;
+            float altoBloque = altoDialogo + 52f;
+            y = Mathf.Max(16f, (alto - altoBloque) * 0.5f);
+            var puesta = new Rect(ancho * 0.5f - anchoDialogo * 0.5f, y, anchoDialogo, altoDialogo);
+            GUI.DrawTexture(puesta, dialogoArt, ScaleMode.StretchToFill, true);
+            var zona = Trozo(puesta, dialogoArt, 96f, 40f, 192f, 84f);
+            Relleno(zona, new Color(0.008f, 0.063f, 0.165f, 1f));
+            GUI.Label(new Rect(zona.x + 8f, zona.y + 4f, zona.width - 16f, 22f), juego.fraseTitulo, hudTexto);
+            GUI.Label(new Rect(zona.x + 8f, zona.y + 28f, zona.width - 16f, zona.height - 34f), juego.fraseCuerpo, hudTexto);
+            GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
+            string textoDialogo = juego.confirmarHuida ? "Correr" : "Cerrar";
+            if (GUI.Button(new Rect(puesta.x + puesta.width * 0.5f - 90f, puesta.yMax + 10f, 180f, 40f), textoDialogo, boton))
+                juego.CerrarPanel();
+            GUI.backgroundColor = Color.white;
+            return;
         }
-        var zonaTexto = new Rect(caja.x + caja.width * 0.32f, caja.y + 36f, caja.width * 0.64f, altoTexto + 28f);
-        Relleno(zonaTexto, new Color(0.03f, 0.04f, 0.1f, 0.88f));
-        GUI.Label(new Rect(zonaTexto.x, zonaTexto.y, zonaTexto.width, 24f), juego.fraseTitulo, pequeño);
-        GUI.Label(new Rect(zonaTexto.x + 4f, zonaTexto.y + 26f, zonaTexto.width - 8f, altoTexto), juego.fraseCuerpo, cuerpo);
+
+        float altoTexto = Mathf.Clamp(cuerpo.CalcHeight(new GUIContent(juego.fraseCuerpo), 560f) + 8f, 70f, 220f);
+        float altoCaja = Mathf.Max(210f, 70f + altoTexto + 64f);
+        if (juego.fraseTitulo == "CÓMO MOVERTE")
+            y = (alto - altoCaja) * 0.5f;
+        else if (y + altoCaja > alto - 12f)
+            y = Mathf.Max(12f, alto - 12f - altoCaja);
+        var caja = new Rect(ancho * 0.5f - 320f, y, 640f, altoCaja);
+        Relleno(caja, new Color(0.05f, 0.04f, 0.12f, 0.97f));
+        Borde(caja, new Color(0.55f, 0.35f, 0.95f));
+        GUI.Label(new Rect(caja.x + 20f, caja.y + 10f, caja.width - 40f, 28f), juego.fraseTitulo, pequeño);
+        GUI.Label(new Rect(caja.x + 24f, caja.y + 44f, caja.width - 48f, altoTexto), juego.fraseCuerpo, cuerpo);
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
         string texto = juego.confirmarHuida ? "Correr" : "Cerrar";
         if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 90f, caja.yMax - 52f, 180f, 40f), texto, boton))
@@ -464,10 +479,18 @@ public class InterfazCampus : MonoBehaviour
         var puesta = Encajar(resultadosArt, new Rect(ancho * 0.5f - 300f, altoCarreras + 8f, 600f, alto - altoCarreras - 16f));
         GUI.DrawTexture(puesta, resultadosArt, ScaleMode.StretchToFill, true);
         var datos = new Rect(puesta.x + puesta.width * 0.08f, puesta.y + puesta.height * 0.28f, puesta.width * 0.62f, puesta.height * 0.42f);
-        Relleno(datos, new Color(0.03f, 0.04f, 0.1f, 0.88f));
+        Relleno(datos, new Color(0.03f, 0.04f, 0.1f, 1f));
         GUI.Label(datos, resumen, cuerpo);
         if (GUI.Button(Trozo(puesta, resultadosArt, 70f, 150f, 180f, 32f), "", vacio))
             juego.VolverAlMenu();
+    }
+
+    Rect PonerArte(Texture2D tex, float x, float y, float ancho)
+    {
+        float alto = ancho * tex.height / tex.width;
+        var zona = new Rect(x, y, ancho, alto);
+        GUI.DrawTexture(zona, tex, ScaleMode.StretchToFill, true);
+        return zona;
     }
 
     Rect Encajar(Texture2D tex, Rect zona)
@@ -498,8 +521,8 @@ public class InterfazCampus : MonoBehaviour
     {
         if (dialogoArt != null)
         {
-            GUI.DrawTexture(caja, dialogoArt, ScaleMode.StretchToFill, true);
-            Relleno(new Rect(caja.x + 18f, caja.y + 28f, caja.width - 36f, caja.height - 46f), new Color(0.03f, 0.04f, 0.1f, 0.72f));
+            Relleno(caja, new Color(0.05f, 0.04f, 0.12f, 0.97f));
+            Borde(caja, new Color(0.55f, 0.35f, 0.95f));
         }
         else
         {

@@ -266,8 +266,8 @@ public class DirectorCampus : MonoBehaviour
 
     public void Entendido()
     {
-        panel = PanelCampus.Ninguno;
         jugando = true;
+        Decir("CÓMO MOVERTE", "Ves el campus desde arriba, como el plano.\nFlechas o W A S D: caminar\nShift: correr. La barra de aire se gasta.\nE: hablar, leer y usar la huella\nEn la clínica: 1 ayudar, 2 seguir de largo\nEsc: pausa\nSi la presencia te alcanza, repites solo esa huida.", "");
     }
 
     public void CerrarPanel()
