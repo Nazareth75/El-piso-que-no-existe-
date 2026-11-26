@@ -53,6 +53,8 @@ public class JugadorCampus : MonoBehaviour
 
         juego.estamina = Mathf.Clamp(juego.estamina, 0f, 100f);
         intencion = eje * velocidad;
+        if (eje.sqrMagnitude > .01f && cuerpo != null && cuerpo.linearVelocity.sqrMagnitude > .1f)
+            SonidoCampus.Paso(velocidad > caminar + .2f, EstadoPartida.enPisoX);
 
         if (eje.x < -0.02f) dibujo.flipX = true;
         else if (eje.x > 0.02f) dibujo.flipX = false;

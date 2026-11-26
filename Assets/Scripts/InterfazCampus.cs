@@ -129,6 +129,9 @@ public class InterfazCampus : MonoBehaviour
                 break;
         }
 
+        if (juego.panel == PanelCampus.Pausa && SonidoCampus.Instancia != null)
+            SonidoCampus.Instancia.Controles(new Rect(ancho * .5f - 180f, alto - 144f, 360f, 128f));
+
         if (juego.jugando && juego.panel == PanelCampus.Ninguno)
         {
             Prompt(juego, ancho, alto);
@@ -198,7 +201,7 @@ public class InterfazCampus : MonoBehaviour
         if (objetosArt != null && !EstadoPartida.enPisoX)
             PonerArte(objetosArt, ancho - 284f, 8f, 272f);
 
-        if(!EstadoPartida.desperto && !EstadoPartida.enPisoX && GUI.Button(new Rect(ancho-158,148,146,38),"Misiones [M]",boton))juego.panel=PanelCampus.Recorrido;
+        if(!EstadoPartida.desperto && !EstadoPartida.enPisoX && SonidoCampus.Boton(new Rect(ancho-158,148,146,38),"Misiones [M]",boton))juego.panel=PanelCampus.Recorrido;
 
         string rumbo = "Sistemas " + EstadoPartida.sistemas + "   Medicina " + EstadoPartida.medicina + "   " + EstadoPartida.NombreTercera;
         GUI.Label(new Rect(ancho - 520f, objetosArt != null ? 112f : 66f, 500f, 24f), rumbo, pequeño);
@@ -234,8 +237,8 @@ public class InterfazCampus : MonoBehaviour
         Relleno(new Rect(barra.x+(juego.sensorHuella.Centro-.14f)*barra.width,barra.y,.28f*barra.width,barra.height),new Color(.13f,.58f,.35f));
         Relleno(new Rect(barra.x+juego.sensorHuella.Posicion*barra.width-2,barra.y-4,4,barra.height+8),Color.white);
         GUI.Label(new Rect(caja.x+28,cy+254,w-56,46),juego.sensorHuella.Mensaje,pequeño);
-        if(GUI.Button(new Rect(caja.x+36,caja.yMax-104,w-72,44),"Leer sensor [Espacio]",boton))juego.LeerSensorHuella();
-        if(GUI.Button(new Rect(caja.x+36,caja.yMax-50,w-72,32),"Cancelar [Esc]",boton))juego.panel=PanelCampus.Ninguno;
+        if(SonidoCampus.Boton(new Rect(caja.x+36,caja.yMax-104,w-72,44),"Leer sensor [Espacio]",boton))juego.LeerSensorHuella();
+        if(SonidoCampus.Boton(new Rect(caja.x+36,caja.yMax-50,w-72,32),"Cancelar [Esc]",boton))juego.panel=PanelCampus.Ninguno;
     }
 
     void MenuRecorrido(DirectorCampus juego,float ancho,float alto)
@@ -243,7 +246,7 @@ public class InterfazCampus : MonoBehaviour
         Velo(ancho,alto,.75f);float w=Mathf.Min(680,ancho-32),h=Mathf.Min(640,alto-32);
         var caja=new Rect((ancho-w)/2,(alto-h)/2,w,h);Relleno(caja,new Color(.035f,.045f,.1f,.98f));Borde(caja,new Color(1,.6f,.2f));
         GUI.Label(new Rect(caja.x+20,caja.y+14,w-190,42),"Conoce UNIFRANZ",titulo);
-        if(GUI.Button(new Rect(caja.xMax-150,caja.y+16,130,36),"Volver [M]",boton))juego.panel=PanelCampus.Ninguno;
+        if(SonidoCampus.Boton(new Rect(caja.xMax-150,caja.y+16,130,36),"Volver [M]",boton))juego.panel=PanelCampus.Ninguno;
         var tarjeta=juego.Tarjeta(RutaPlantaBaja.TarjetaActual);
         if(tarjeta!=null)GUI.DrawTexture(new Rect(caja.x+24,caja.y+66,Mathf.Min(320,w-48),120),tarjeta,ScaleMode.ScaleToFit,true);
         else GUI.Label(new Rect(caja.x+24,caja.y+66,w-48,64),RutaPlantaBaja.Objetivo,cuerpo);
@@ -295,14 +298,14 @@ public class InterfazCampus : MonoBehaviour
         Velo(ancho, alto, 0.55f);
         var puesta = Encajar(menuArt, new Rect(0f, 0f, ancho, alto - 64f));
         GUI.DrawTexture(puesta, menuArt, ScaleMode.StretchToFill, true);
-        if (GUI.Button(Trozo(puesta, menuArt, 36f, 110f, 164f, 30f), "", vacio)) juego.NuevaPartida();
-        if (GUI.Button(Trozo(puesta, menuArt, 36f, 278f, 164f, 28f), "", vacio)) Salir();
+        if (SonidoCampus.Boton(Trozo(puesta, menuArt, 36f, 110f, 164f, 30f), "", vacio)) juego.NuevaPartida();
+        if (SonidoCampus.Boton(Trozo(puesta, menuArt, 36f, 278f, 164f, 28f), "", vacio)) Salir();
 
         float x = ancho * 0.5f - 160f;
         GUI.backgroundColor = EstadoPartida.personaje == 0 ? new Color(0.95f, 0.48f, 0.12f) : new Color(0.16f, 0.22f, 0.36f);
-        if (GUI.Button(new Rect(x, alto - 54f, 150f, 40f), "Mochila", boton)) juego.ElegirPersonaje(0);
+        if (SonidoCampus.Boton(new Rect(x, alto - 54f, 150f, 40f), "Mochila", boton)) juego.ElegirPersonaje(0);
         GUI.backgroundColor = EstadoPartida.personaje == 1 ? new Color(0.95f, 0.48f, 0.12f) : new Color(0.16f, 0.22f, 0.36f);
-        if (GUI.Button(new Rect(x + 170f, alto - 54f, 150f, 40f), "Cabello corto", boton)) juego.ElegirPersonaje(1);
+        if (SonidoCampus.Boton(new Rect(x + 170f, alto - 54f, 150f, 40f), "Cabello corto", boton)) juego.ElegirPersonaje(1);
         GUI.backgroundColor = Color.white;
     }
 
@@ -313,13 +316,13 @@ public class InterfazCampus : MonoBehaviour
         GUI.Label(new Rect(0f, 122f, ancho, 30f), "UNIFRANZ  ·  primer día", pequeño);
         float x = ancho * 0.5f - 150f;
         GUI.backgroundColor = EstadoPartida.personaje == 0 ? new Color(0.95f, 0.48f, 0.12f) : new Color(0.16f, 0.22f, 0.36f);
-        if (GUI.Button(new Rect(x, 190f, 140f, 42f), "Mochila", boton)) juego.ElegirPersonaje(0);
+        if (SonidoCampus.Boton(new Rect(x, 190f, 140f, 42f), "Mochila", boton)) juego.ElegirPersonaje(0);
         GUI.backgroundColor = EstadoPartida.personaje == 1 ? new Color(0.95f, 0.48f, 0.12f) : new Color(0.16f, 0.22f, 0.36f);
-        if (GUI.Button(new Rect(x + 160f, 190f, 140f, 42f), "Cabello corto", boton)) juego.ElegirPersonaje(1);
+        if (SonidoCampus.Boton(new Rect(x + 160f, 190f, 140f, 42f), "Cabello corto", boton)) juego.ElegirPersonaje(1);
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-        if (GUI.Button(new Rect(ancho * 0.5f - 120f, 270f, 240f, 48f), "Jugar", boton)) juego.NuevaPartida();
+        if (SonidoCampus.Boton(new Rect(ancho * 0.5f - 120f, 270f, 240f, 48f), "Jugar", boton)) juego.NuevaPartida();
         GUI.backgroundColor = new Color(0.16f, 0.22f, 0.36f);
-        if (GUI.Button(new Rect(ancho * 0.5f - 120f, 332f, 240f, 42f), "Salir", boton)) Salir();
+        if (SonidoCampus.Boton(new Rect(ancho * 0.5f - 120f, 332f, 240f, 42f), "Salir", boton)) Salir();
         GUI.backgroundColor = Color.white;
     }
 
@@ -333,7 +336,7 @@ public class InterfazCampus : MonoBehaviour
                 "Es tu primer día en la universidad.\n\nUna estudiante te espera en la puerta y te hace el recorrido: recepción, admisiones, la clínica, gestión financiera, el auditorio, servicios, la cafetería y la game room.",
                 cuerpo);
             GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-            if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 100f, caja.yMax - 64f, 200f, 44f), "Continuar", boton))
+            if (SonidoCampus.Boton(new Rect(caja.x + caja.width * 0.5f - 100f, caja.yMax - 64f, 200f, 44f), "Continuar", boton))
                 juego.ContinuarIntro();
             GUI.backgroundColor = Color.white;
             return;
@@ -342,7 +345,7 @@ public class InterfazCampus : MonoBehaviour
         Velo(ancho, alto, 0.45f);
         var puesta = Encajar(introArt, new Rect(ancho * 0.08f, 24f, ancho * 0.84f, alto - 48f));
         GUI.DrawTexture(puesta, introArt, ScaleMode.StretchToFill, true);
-        if (GUI.Button(Trozo(puesta, introArt, 155f, 255f, 190f, 36f), "", vacio))
+        if (SonidoCampus.Boton(Trozo(puesta, introArt, 155f, 255f, 190f, 36f), "", vacio))
             juego.ContinuarIntro();
     }
 
@@ -353,7 +356,7 @@ public class InterfazCampus : MonoBehaviour
         GUI.Label(new Rect(caja.x+20,caja.y+20,caja.width-40,42),"Tu primer día en UNIFRANZ",titulo);
         GUI.Label(new Rect(caja.x+30,caja.y+82,caja.width-60,230),
             "Conoce la universidad siguiendo las misiones de planta baja.\n\nWASD / flechas: caminar · Shift: correr\nE: hablar e interactuar\nM: consultar el recorrido · Esc: pausa\n\nLa flecha indica tu siguiente destino. Acércate y pulsa E cuando aparezca la indicación.",cuerpo);
-        if(GUI.Button(new Rect(caja.center.x-120,caja.yMax-70,240,46),"Entendido",boton))juego.Entendido();
+        if(SonidoCampus.Boton(new Rect(caja.center.x-120,caja.yMax-70,240,46),"Entendido",boton))juego.Entendido();
     }
 
     void Frase(DirectorCampus juego, float ancho, float alto)
@@ -383,7 +386,7 @@ public class InterfazCampus : MonoBehaviour
             GUI.Label(new Rect(zona.x + 8f, zona.y + 28f, zona.width - 16f, zona.height - 34f), juego.fraseCuerpo, hudTexto);
             GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
             string textoDialogo = juego.confirmarHuida ? "Correr" : "Cerrar";
-            if (GUI.Button(new Rect(puesta.x + puesta.width * 0.5f - 90f, puesta.yMax + 10f, 180f, 40f), textoDialogo, boton))
+            if (SonidoCampus.Boton(new Rect(puesta.x + puesta.width * 0.5f - 90f, puesta.yMax + 10f, 180f, 40f), textoDialogo, boton))
                 juego.CerrarPanel();
             GUI.backgroundColor = Color.white;
             return;
@@ -402,7 +405,7 @@ public class InterfazCampus : MonoBehaviour
         GUI.Label(new Rect(caja.x + 24f, caja.y + 44f, caja.width - 48f, altoTexto), juego.fraseCuerpo, cuerpo);
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
         string texto = juego.confirmarHuida ? "Correr" : "Cerrar";
-        if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 90f, caja.yMax - 52f, 180f, 40f), texto, boton))
+        if (SonidoCampus.Boton(new Rect(caja.x + caja.width * 0.5f - 90f, caja.yMax - 52f, 180f, 40f), texto, boton))
             juego.CerrarPanel();
         GUI.backgroundColor = Color.white;
     }
@@ -418,9 +421,9 @@ public class InterfazCampus : MonoBehaviour
             "Un estudiante se torció el tobillo en las escaleras.\n1 ayudar suma Medicina. 2 seguir de largo no cambia nada.",
             cuerpo);
         GUI.backgroundColor = new Color(0.2f, 0.55f, 0.35f);
-        if (GUI.Button(new Rect(caja.x + 30f, caja.y + 130f, 270f, 46f), "1  Ayudar", boton)) juego.Ayudar();
+        if (SonidoCampus.Boton(new Rect(caja.x + 30f, caja.y + 130f, 270f, 46f), "1  Ayudar", boton)) juego.Ayudar();
         GUI.backgroundColor = new Color(0.35f, 0.28f, 0.2f);
-        if (GUI.Button(new Rect(caja.x + 320f, caja.y + 130f, 290f, 46f), "2  Seguir de largo", boton)) juego.Seguir();
+        if (SonidoCampus.Boton(new Rect(caja.x + 320f, caja.y + 130f, 290f, 46f), "2  Seguir de largo", boton)) juego.Seguir();
         GUI.backgroundColor = Color.white;
     }
 
@@ -440,25 +443,25 @@ public class InterfazCampus : MonoBehaviour
             if(!disponible)Relleno(zona,new Color(.03f,.04f,.09f,.72f));
             if(actual)Borde(zona,new Color(.4f,.95f,.7f));
             bool previo=GUI.enabled;GUI.enabled=disponible&&!actual;
-            if(GUI.Button(zona,"",vacio)){buscarPisoAscensor=false;juego.ElegirPiso(pisos[i]);}
+            if(SonidoCampus.Boton(zona,"",vacio)){buscarPisoAscensor=false;juego.ElegirPiso(pisos[i]);}
             GUI.enabled=previo;
         }
         var extra=new Rect(panelRect.x+88*factorPanel,panelRect.y+146*factorPanel,64*factorPanel,40*factorPanel);
         if(juego.BotonXListo || juego.MostrarPisoX){
-            if(GUI.Button(extra,"PISO X",boton))juego.ElegirPiso("X");
+            if(SonidoCampus.Boton(extra,"PISO X",boton))juego.ElegirPiso("X");
         }else if(EstadoPartida.desperto){
-            if(GUI.Button(extra,"?",boton))buscarPisoAscensor=true;
+            if(SonidoCampus.Boton(extra,"?",boton))buscarPisoAscensor=true;
         }
         }
         if(buscarPisoAscensor){
             Relleno(panelRect,new Color(.10f,.09f,.18f,1));Borde(panelRect,new Color(.95f,.57f,.2f));
             GUI.Label(new Rect(panelRect.x+12,panelRect.y+30,panelRect.width-24,50),"¿Cuál piso no figura?",titulo);
             string[] secretos={"6","7","8"};
-            for(int i=0;i<3;i++)if(GUI.Button(new Rect(panelRect.x+20+i*(panelRect.width-40)/3,panelRect.y+130,(panelRect.width-40)/3-6,66),secretos[i],boton)){juego.ElegirPiso(secretos[i]);buscarPisoAscensor=false;}
-            if(GUI.Button(new Rect(panelRect.x+24,panelRect.y+260,panelRect.width-48,46),"Volver a destinos",boton))buscarPisoAscensor=false;
+            for(int i=0;i<3;i++)if(SonidoCampus.Boton(new Rect(panelRect.x+20+i*(panelRect.width-40)/3,panelRect.y+130,(panelRect.width-40)/3-6,66),secretos[i],boton)){juego.ElegirPiso(secretos[i]);buscarPisoAscensor=false;}
+            if(SonidoCampus.Boton(new Rect(panelRect.x+24,panelRect.y+260,panelRect.width-48,46),"Volver a destinos",boton))buscarPisoAscensor=false;
         }
         GUI.Label(new Rect(caja.x+18,caja.yMax-91,caja.width-36,30),string.IsNullOrEmpty(juego.aviso)?"Piso 1: sin plano disponible · PB: tecla 0 · M: tecla M":juego.aviso,pequeño);
-        if(GUI.Button(new Rect(caja.x+30,caja.yMax-50,caja.width-60,36),"Cerrar [Esc]",boton)){buscarPisoAscensor=false;juego.CerrarPanel();}
+        if(SonidoCampus.Boton(new Rect(caja.x+30,caja.yMax-50,caja.width-60,36),"Cerrar [Esc]",boton)){buscarPisoAscensor=false;juego.CerrarPanel();}
     }
 
     Rect MarcoActividad(string nombre,string subtitulo,float ancho,float alto)
@@ -496,12 +499,12 @@ public class InterfazCampus : MonoBehaviour
         for(int i=0;i<4;i++){
             Color previo=GUI.backgroundColor;
             GUI.backgroundColor=juego.flecha==nombres[i]?new Color(.98f,.58f,.18f):new Color(.28f,.23f,.43f);
-            if(GUI.Button(new Rect(cx+offsets[i].x-tam*.5f,cy+offsets[i].y,tam,tam),etiquetas[i],boton))juego.PulsarDireccionArcade(teclas[i]);
+            if(SonidoCampus.Boton(new Rect(cx+offsets[i].x-tam*.5f,cy+offsets[i].y,tam,tam),etiquetas[i],boton))juego.PulsarDireccionArcade(teclas[i]);
             GUI.backgroundColor=previo;
         }
         GUI.Label(new Rect(caja.x+30,caja.y+396,caja.width-60,64),juego.avisoArcade,pequeño);
         GUI.Label(new Rect(caja.x+20,caja.yMax-101,caja.width-40,25),"Flechas / WASD o pulsa los controles de pantalla",pequeño);
-        if(GUI.Button(new Rect(caja.x+30,caja.yMax-59,caja.width-60,40),"Volver al campus [Esc]",boton))juego.CerrarPanel();
+        if(SonidoCampus.Boton(new Rect(caja.x+30,caja.yMax-59,caja.width-60,40),"Volver al campus [Esc]",boton))juego.CerrarPanel();
     }
 
     void Pausa(DirectorCampus juego, float ancho, float alto)
@@ -511,10 +514,10 @@ public class InterfazCampus : MonoBehaviour
             var caja = CajaCentral(ancho, alto, 420f, 280f);
             GUI.Label(new Rect(caja.x, caja.y + 16f, caja.width, 40f), "Pausa", titulo);
             GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-            if (GUI.Button(new Rect(caja.x + 70f, caja.y + 80f, 280f, 44f), "Continuar", boton)) juego.CerrarPanel();
+            if (SonidoCampus.Boton(new Rect(caja.x + 70f, caja.y + 80f, 280f, 44f), "Continuar", boton)) juego.CerrarPanel();
             GUI.backgroundColor = new Color(0.16f, 0.22f, 0.36f);
-            if (EstadoPartida.huidaActiva && GUI.Button(new Rect(caja.x + 70f, caja.y + 136f, 280f, 44f), "Reintentar huida", boton)) juego.Reintentar();
-            if (GUI.Button(new Rect(caja.x + 70f, caja.y + (EstadoPartida.huidaActiva ? 192f : 136f), 280f, 44f), "Menú principal", boton)) juego.VolverAlMenu();
+            if (EstadoPartida.huidaActiva && SonidoCampus.Boton(new Rect(caja.x + 70f, caja.y + 136f, 280f, 44f), "Reintentar huida", boton)) juego.Reintentar();
+            if (SonidoCampus.Boton(new Rect(caja.x + 70f, caja.y + (EstadoPartida.huidaActiva ? 192f : 136f), 280f, 44f), "Menú principal", boton)) juego.VolverAlMenu();
             GUI.backgroundColor = Color.white;
             return;
         }
@@ -522,12 +525,12 @@ public class InterfazCampus : MonoBehaviour
         Velo(ancho, alto, 0.45f);
         var puesta = Encajar(pausaArt, new Rect(ancho * 0.5f - 180f, alto * 0.5f - 200f, 360f, 360f));
         GUI.DrawTexture(puesta, pausaArt, ScaleMode.StretchToFill, true);
-        if (GUI.Button(Trozo(puesta, pausaArt, 16f, 40f, 166f, 28f), "", vacio)) juego.CerrarPanel();
-        if (GUI.Button(Trozo(puesta, pausaArt, 16f, 156f, 166f, 26f), "", vacio)) juego.VolverAlMenu();
+        if (SonidoCampus.Boton(Trozo(puesta, pausaArt, 16f, 40f, 166f, 28f), "", vacio)) juego.CerrarPanel();
+        if (SonidoCampus.Boton(Trozo(puesta, pausaArt, 16f, 156f, 166f, 26f), "", vacio)) juego.VolverAlMenu();
         if (EstadoPartida.huidaActiva)
         {
             GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-            if (GUI.Button(new Rect(puesta.x, puesta.yMax + 8f, puesta.width, 40f), "Reintentar huida", boton)) juego.Reintentar();
+            if (SonidoCampus.Boton(new Rect(puesta.x, puesta.yMax + 8f, puesta.width, 40f), "Reintentar huida", boton)) juego.Reintentar();
             GUI.backgroundColor = Color.white;
         }
     }
@@ -541,7 +544,7 @@ public class InterfazCampus : MonoBehaviour
             ? "Vuelves al ascensor con la vida completa. Conservas los objetos recogidos y las misiones completadas."
             : "Repites solo la huida. Sistemas y Medicina se quedan como estaban.", cuerpo);
         GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-        if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 100f, caja.yMax - 64f, 200f, 44f), "Reintentar", boton))
+        if (SonidoCampus.Boton(new Rect(caja.x + caja.width * 0.5f - 100f, caja.yMax - 64f, 200f, 44f), "Reintentar", boton))
             juego.Reintentar();
         GUI.backgroundColor = Color.white;
     }
@@ -562,7 +565,7 @@ public class InterfazCampus : MonoBehaviour
             GUI.Label(new Rect(caja.x, caja.y + 12f, caja.width, 40f), cruzo ? "Cruzaste el piso que no existe" : "El piso sigue cerrado", titulo);
             GUI.Label(new Rect(caja.x + 28f, caja.y + 64f, caja.width - 56f, 250f), resumen + "\n\nPIXEL404\nKathlen Escalante, Nazareth Padilla, José Mamani y Dilan Paco.\nUNIFRANZ", cuerpo);
             GUI.backgroundColor = new Color(0.95f, 0.48f, 0.12f);
-            if (GUI.Button(new Rect(caja.x + caja.width * 0.5f - 120f, caja.yMax - 64f, 240f, 44f), "Volver al menú", boton))
+            if (SonidoCampus.Boton(new Rect(caja.x + caja.width * 0.5f - 120f, caja.yMax - 64f, 240f, 44f), "Volver al menú", boton))
                 juego.VolverAlMenu();
             GUI.backgroundColor = Color.white;
             return;
@@ -581,7 +584,7 @@ public class InterfazCampus : MonoBehaviour
         var datos = new Rect(puesta.x + puesta.width * 0.08f, puesta.y + puesta.height * 0.28f, puesta.width * 0.62f, puesta.height * 0.42f);
         Relleno(datos, new Color(0.03f, 0.04f, 0.1f, 1f));
         GUI.Label(datos, resumen, cuerpo);
-        if (GUI.Button(Trozo(puesta, resultadosArt, 70f, 150f, 180f, 32f), "", vacio))
+        if (SonidoCampus.Boton(Trozo(puesta, resultadosArt, 70f, 150f, 180f, 32f), "", vacio))
             juego.VolverAlMenu();
     }
 

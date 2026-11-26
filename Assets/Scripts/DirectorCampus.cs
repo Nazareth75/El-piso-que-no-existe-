@@ -127,6 +127,7 @@ public partial class DirectorCampus : MonoBehaviour
     void Start()
     {
         fuente = gameObject.AddComponent<AudioSource>();
+        SonidoCampus.Iniciar(gameObject);
         camara = Camera.main;
         if (camara == null)
         {
@@ -455,6 +456,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     public void Reintentar()
     {
+        SonidoCampus.Emitir("ui_abrir", .6f);
         estamina = 100f;
         aviso = "";
         panel = PanelCampus.Ninguno;
@@ -473,6 +475,7 @@ public partial class DirectorCampus : MonoBehaviour
     public void AlcanzadoEnPiso()
     {
         if (!EstadoPartida.enPisoX || panel != PanelCampus.Ninguno) return;
+        SonidoCampus.Emitir("golpe", .8f);
         panel = PanelCampus.Muerte;
         if (jugador != null) jugador.Detener();
     }
@@ -487,6 +490,7 @@ public partial class DirectorCampus : MonoBehaviour
     public void Ayudar()
     {
         if (!EstadoPartida.desperto || EstadoPartida.clinica) return;
+        SonidoCampus.Emitir("curar", .7f);
         EstadoPartida.clinica = true;
         EstadoPartida.ayudo = true;
         EstadoPartida.medicina += 1;
@@ -503,6 +507,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     public void ElegirPiso(string piso)
     {
+        SonidoCampus.Emitir("ascensor_motor", .65f);
         if(piso==PlantaActual){aviso="Ya estás en "+piso+".";return;}
         if(piso=="X" && !BotonXListo && !MostrarPisoX){aviso="Ese destino todavía no está disponible.";return;}
 
@@ -587,7 +592,13 @@ public partial class DirectorCampus : MonoBehaviour
     public readonly SensorHuellaJuego sensorHuella=new SensorHuellaJuego();
     public void LeerSensorHuella()
     {
-        if(panel!=PanelCampus.SensorHuella || !sensorHuella.Leer())return;
+        if(panel!=PanelCampus.SensorHuella)return;
+        int anteriores=sensorHuella.Aciertos;
+        bool listo=sensorHuella.Leer();
+        if(sensorHuella.Aciertos>anteriores)SonidoCampus.Emitir("correcto",.55f);
+        else if(sensorHuella.Mensaje.StartsWith("Lectura inestable"))SonidoCampus.Emitir("error",.5f);
+        if(!listo)return;
+        SonidoCampus.Emitir("huella", .7f);
         EstadoPartida.huella=true;AbrirPuertas();
         Decir("MOLINETES · ACCESO VALIDADO", "Tu huella fue registrada. Los molinetes están abiertos; continúa el recorrido.", "control_huella");
     }
@@ -597,6 +608,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     void Usar(string id)
     {
+        SonidoCampus.Emitir(id == "ascensor" ? "ascensor_motor" : id.StartsWith("aula_") ? "puerta" : "ui_abrir", .45f);
         if (EnAulaAcademica) { UsarAulaAcademica(id); return; }
         if (id.StartsWith("aula_")) { EntrarAulaAcademica(id); return; }
         if (dentro && salaId == "pisox" && NivelSiete != null)
@@ -978,6 +990,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     void Gritar(string texto)
     {
+        SonidoCampus.Emitir("alarma", .55f);
         grito = texto;
         gritoHasta = Time.time + 4f;
     }
@@ -986,6 +999,7 @@ public partial class DirectorCampus : MonoBehaviour
     {
         if (jugador != null) jugador.Detener();
         if (presencia != null) presencia.persigue = false;
+        SonidoCampus.Emitir("golpe", .8f);
         panel = PanelCampus.Muerte;
     }
 
@@ -1001,6 +1015,7 @@ public partial class DirectorCampus : MonoBehaviour
     void ColocarHuida()
     {
         if (dentro) SalirSala();
+        SonidoCampus.Emitir("alerta_monstruo", .65f);
         EstadoPartida.huidaActiva = true;
         EstadoPartida.huella = true;
         AbrirPuertas();
@@ -1529,9 +1544,10 @@ public partial class DirectorCampus : MonoBehaviour
     {
         if(panel!=PanelCampus.Game || Time.unscaledTime<proximaPulsacionArcade)return;
         proximaPulsacionArcade=Time.unscaledTime+.18f;
-        if(tecla!=teclaJuego){aciertos=0;avisoArcade="Dirección incorrecta. Empieza otra vez; no hay límite de intentos.";NuevaFlecha();return;}
+        if(tecla!=teclaJuego){SonidoCampus.Emitir("error", .6f);aciertos=0;avisoArcade="Dirección incorrecta. Empieza otra vez; no hay límite de intentos.";NuevaFlecha();return;}
+        SonidoCampus.Emitir("correcto", .6f);
         aciertos++;
-        if(aciertos>=3){EstadoPartida.gameRoom=true;Decir("GAME ROOM", "Completaste el minijuego. No cambia tu carrera.", "game_room");return;}
+        if(aciertos>=3){SonidoCampus.Emitir("mision", .7f);EstadoPartida.gameRoom=true;Decir("GAME ROOM", "Completaste el minijuego. No cambia tu carrera.", "game_room");return;}
         avisoArcade="¡Bien! Sigue la siguiente dirección.";NuevaFlecha();
     }
     void RevisarMinijuego()
@@ -1603,6 +1619,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     void EntrarSala(string id)
     {
+        SonidoCampus.Emitir("puerta", .6f);
         var tex = RecursosCampus.Textura("Interiores/" + ArchivoSala(id));
         if (tex == null) return;
         dentro = true;
@@ -1686,6 +1703,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     void Despertar()
     {
+        SonidoCampus.Emitir("desmayo", .7f);
         EstadoPartida.desperto = true;
         EstadoPartida.huidaActiva = false;
         if (presencia != null) presencia.persigue = false;
@@ -1805,6 +1823,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     void EntrarPisoNumero(int n, int lado = 0)
     {
+        SonidoCampus.Emitir("ascensor_llegada", .55f);
         var tex = RecursosCampus.Textura("Pisos/piso" + n + ".png");
         if (tex == null) return;
         SoltarInterior();
@@ -2019,6 +2038,7 @@ public partial class DirectorCampus : MonoBehaviour
 
     System.Collections.IEnumerator DesmayoEnAscensor()
     {
+        SonidoCampus.Emitir("desmayo", .7f);
         desmayando = true;
         panel = PanelCampus.Ninguno;
         if (jugador != null) jugador.Detener();
@@ -2118,6 +2138,7 @@ public partial class DirectorCampus : MonoBehaviour
             return;
         }
         if (dentro) SalirSala();
+        SonidoCampus.Emitir("portal", .7f);
         EstadoPartida.enPisoX = true;
         EstadoPartida.huidaActiva = false;
         if (presencia != null) presencia.persigue = false;
@@ -2204,6 +2225,7 @@ public partial class DirectorCampus : MonoBehaviour
     void SalirSala()
     {
         if (!dentro) return;
+        SonidoCampus.Emitir("puerta", .5f);
         DescartarExteriorAcademico();
         EstadoPartida.enPisoX = false;
         NivelSiete = null;

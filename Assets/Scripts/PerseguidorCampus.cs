@@ -24,6 +24,7 @@ public class PerseguidorCampus : MonoBehaviour
 
         var juego = DirectorCampus.Instancia;
         if (juego != null && juego.bloqueado) return;
+        SonidoCampus.Amenaza();
 
         Vector2 pos = transform.position;
         Vector2 dir = (Vector2)objetivo.position - pos;

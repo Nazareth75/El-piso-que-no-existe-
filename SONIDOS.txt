@@ -1,0 +1,18 @@
+AUDIO DEL CAMPUS Y PISO X
+
+40 sonidos WAV originales sintetizados para este proyecto, sin muestras externas.
+Se cargan desde Assets/Resources/AudioCampus y se incluyen en la compilación del juego.
+
+Ambientes: menú, campus, interiores, universidad vacía y Piso X, con transición gradual.
+Acciones: pasos alternados al caminar/correr; metal en Piso X; puertas; motor y llegada
+del ascensor; interfaz; diálogos; recogida de materiales y tarjetas; sensor de huella;
+respuestas correctas/incorrectas; misión completada; curación; escudo; pulso aturdidor;
+electricidad; fuga tóxica; alarma; criaturas; latidos de peligro; portal; desmayo;
+anclajes; derrota y final.
+
+En pausa hay tres controles: General, Ambiente y Efectos. Se conservan las preferencias.
+Las criaturas tienen atenuación por distancia y panorama estéreo, y tiempos mínimos
+entre llamadas. Los pasos requieren desplazamiento y se detienen al abrir un panel.
+
+Menú de Unity: Sonido > Verificar biblioteca de 40 sonidos.
+Tools/generar_sonidos.py permite regenerar la biblioteca de forma reproducible.

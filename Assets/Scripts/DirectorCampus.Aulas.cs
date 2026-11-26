@@ -53,6 +53,7 @@ public partial class DirectorCampus
             Decir("INTERIORES", "No se pudo cargar la lámina original de aulas, laboratorio y clínica.", "");
             return;
         }
+        SonidoCampus.Emitir("puerta", .55f);
         jugador.Detener();
         retornoAcademico = jugador.transform.position;
         exteriorAcademico = interiorGo;
@@ -107,6 +108,7 @@ public partial class DirectorCampus
     public void SalirAulaAcademica()
     {
         if (!EnAulaAcademica) return;
+        SonidoCampus.Emitir("puerta", .55f);
         jugador.Detener();
         if (interiorGo != null){interiorGo.SetActive(false);Destroy(interiorGo);}
         if (marcoGo != null){marcoGo.SetActive(false);Destroy(marcoGo);}
@@ -140,6 +142,7 @@ public partial class DirectorCampus
         if (id == "apunteAcademico")
         {
             if (!SalasAcademicas.apuntes.Add(aulaEnCurso.id)) return;
+            SonidoCampus.Emitir("recoger", .7f);
             Decir("MATERIAL RECOGIDO", "Guardas el material de " + aulaEnCurso.nombre + ". Puedes seguir explorando o volver al pasillo por la puerta inferior.", "");
         }
         else if (id == "actividadAcademica")

@@ -265,12 +265,16 @@ public class PisoSiete : MonoBehaviour
 
     void Hablar(string tituloDialogo, string mensaje)
     {
+        if (tituloDialogo.Contains("RECUPERADOS") || tituloDialogo.Contains("RECUPERADO") || tituloDialogo.Contains("SUMINISTROS") || tituloDialogo == "MUESTRA SELLADA" || tituloDialogo == "ATURDIDOR DE EMERGENCIA")
+            SonidoCampus.Emitir("recoger", .7f);
+        if (tituloDialogo == "ARCHIVO · REGISTRO 07") SonidoCampus.Emitir("tarjeta", .7f);
         director.DialogoPisoSiete(tituloDialogo, mensaje);
     }
 
     void Completar(string id)
     {
-        EstadoPisoSiete.misiones.Add(id);
+        if (EstadoPisoSiete.misiones.Add(id))
+            SonidoCampus.Emitir(id == "energia" ? "energia" : id == "clinica" ? "curar" : id == "transmision" ? "transmision" : id == "estructura" ? "anclajes" : "mision", .75f);
         ActualizarMarcas();
     }
 
@@ -316,6 +320,7 @@ public class PisoSiete : MonoBehaviour
             {
                 EstadoPisoSiete.objetos.Remove("botiquin");
                 EstadoPisoSiete.vida = Mathf.Min(100, EstadoPisoSiete.vida + 50);
+                SonidoCampus.Emitir("curar", .7f);
                 Avisar("Botiquín usado: +50 de vida.");
             }
         }
@@ -328,6 +333,7 @@ public class PisoSiete : MonoBehaviour
         if (tiempoActivo < pulsoHasta) { Avisar("El aturdidor se está recargando."); return; }
         if (director.estamina < 25f) { Avisar("Necesitas 25 de aire para el pulso."); return; }
         director.estamina -= 25f;
+        SonidoCampus.Emitir("pulso", .7f);
         pulsoHasta = tiempoActivo + 2.5f;
         int afectados = 0;
         foreach (var enemigo in enemigos)
@@ -341,7 +347,8 @@ public class PisoSiete : MonoBehaviour
         if (director.bloqueado || Time.time < inmuneHasta) return;
         inmuneHasta = Time.time + 1.6f;
         EstadoPisoSiete.golpes++;
-        if (EstadoPisoSiete.objetos.Remove("escudo")) { Avisar("El escudo absorbió el golpe."); return; }
+        if (EstadoPisoSiete.objetos.Remove("escudo")) { SonidoCampus.Emitir("escudo", .75f); Avisar("El escudo absorbió el golpe."); return; }
+        SonidoCampus.Emitir(causa.Contains("descarga") ? "electrico" : causa.Contains("tóxica") ? "toxico" : "golpe", .7f);
         EstadoPisoSiete.vida = Mathf.Max(0, EstadoPisoSiete.vida - cantidad);
         Avisar(causa + " Vida: " + EstadoPisoSiete.vida + ". Busca una zona segura.");
         if (EstadoPisoSiete.vida == 0) director.AlcanzadoEnPiso();
@@ -564,7 +571,7 @@ public class PisoSiete : MonoBehaviour
         {
             nombre = "ASCENSOR · PISO 7";
             mensaje = "La cabina sigue aquí. Tus hallazgos quedan registrados durante esta partida. Puedes regresar al campus o seguir investigando.\n\nAl volver al piso 7 conservas las seis tareas y los objetos que hayas recogido.";
-            if (GUI.Button(new Rect(caja.x + 30f, caja.y + 280f, 640f, 48f), "Volver al selector de pisos", boton)) director.RegresarDelPisoSiete();
+            if (SonidoCampus.Boton(new Rect(caja.x + 30f, caja.y + 280f, 640f, 48f), "Volver al selector de pisos", boton)) director.RegresarDelPisoSiete();
         }
         else if (ventana == "mapa")
         {
@@ -588,7 +595,7 @@ public class PisoSiete : MonoBehaviour
             for (int i = 0; i < 3; i++)
             {
                 int elegido = i;
-                if (GUI.Button(new Rect(caja.x + 30f + i * 218f, caja.y + 270f, 204f, 54f), cables[i], boton))
+                if (SonidoCampus.Boton(new Rect(caja.x + 30f + i * 218f, caja.y + 270f, 204f, 54f), cables[i], boton))
                     ConectarCable(elegido);
             }
         }
@@ -597,14 +604,14 @@ public class PisoSiete : MonoBehaviour
             nombre = "CLÍNICA · AYUDA DE EMERGENCIA";
             mensaje = "Vera: «La criatura dañó el monitor y el paciente no puede moverse. Necesito que reconectes los sensores y me acerques el material sellado».\n\nElige una acción. Esta es una situación ficticia del laboratorio.";
             Opcion(caja, 0, "Reconectar monitor y entregar material", "clinica");
-            if (GUI.Button(new Rect(caja.x + 30f, caja.y + 330f, 640f, 44f), "Forzar el traslado sin estabilizar", boton)) error = "Vera: «Aún no. Ayúdame con el monitor y el material primero».";
+            if (SonidoCampus.Boton(new Rect(caja.x + 30f, caja.y + 330f, 640f, 44f), "Forzar el traslado sin estabilizar", boton)) error = "Vera: «Aún no. Ayúdame con el monitor y el material primero».";
         }
         else if (ventana == "antidoto")
         {
             nombre = "LABORATORIO · CONTENCIÓN";
             mensaje = "El lector identifica la muestra del núcleo.\nVera: «Usa el reactivo dentro de la cámara sellada. El aire del piso llevará el neutralizante a las salas».\n\nSelecciona el procedimiento de contención.";
             Opcion(caja, 0, "Sellar cámara, añadir reactivo y neutralizar", "antidoto");
-            if (GUI.Button(new Rect(caja.x + 30f, caja.y + 330f, 640f, 44f), "Abrir la muestra en el pasillo", boton)) error = "Vera: «No abras el recipiente. La cámara sellada evita otra fuga».";
+            if (SonidoCampus.Boton(new Rect(caja.x + 30f, caja.y + 330f, 640f, 44f), "Abrir la muestra en el pasillo", boton)) error = "Vera: «No abras el recipiente. La cámara sellada evita otra fuga».";
         }
         else if (ventana == "transmision")
         {
@@ -617,24 +624,24 @@ public class PisoSiete : MonoBehaviour
             nombre = "INGENIERÍA · ÚLTIMO ANCLAJE";
             mensaje = "La señal ha abierto una ruta de regreso, pero el núcleo está deformando la salida.\n\nEl kit contiene anclajes para reforzar las columnas. El plano muestra los puntos de carga.";
             Opcion(caja, 0, "Instalar anclajes en los puntos de carga", "estructura");
-            if (GUI.Button(new Rect(caja.x + 30f, caja.y + 330f, 640f, 44f), "Retirar el soporte principal", boton)) error = "El plano advierte que retirar ese soporte bloquearía la salida. Usa los anclajes.";
+            if (SonidoCampus.Boton(new Rect(caja.x + 30f, caja.y + 330f, 640f, 44f), "Retirar el soporte principal", boton)) error = "El plano advierte que retirar ese soporte bloquearía la salida. Usa los anclajes.";
         }
         else if (ventana == "final")
         {
             nombre = "NÚCLEO ESTABLE · REGRESO AL CAMPUS";
             mensaje = "La tarjeta abre el núcleo. El paciente está a salvo, la evidencia fue transmitida y la contaminación permanece contenida.\n\nVera: «El piso existió. Ahora todos sabrán lo que pasó. Cruza; yo llevaré al paciente por la cabina».\n\n¿Cruzar el portal?";
-            if (GUI.Button(new Rect(caja.x + 30f, caja.y + 280f, 640f, 48f), "Cruzar y completar el Proyecto 07", boton))
+            if (SonidoCampus.Boton(new Rect(caja.x + 30f, caja.y + 280f, 640f, 48f), "Cruzar y completar el Proyecto 07", boton))
                 CruzarPortal();
         }
         GUI.Label(new Rect(caja.x + 20f, caja.y + 16f, 660f, 42f), nombre, titulo);
         GUI.Label(new Rect(caja.x + 30f, caja.y + 76f, 640f, ventana == "inventario" ? 365f : 180f), mensaje, texto);
         GUI.Label(new Rect(caja.x + 30f, caja.y + 388f, 640f, 68f), error, texto);
-        if (GUI.Button(new Rect(caja.x + 240f, caja.yMax - 58f, 220f, 40f), "Volver al piso · Esc", boton)) CerrarPrueba();
+        if (SonidoCampus.Boton(new Rect(caja.x + 240f, caja.yMax - 58f, 220f, 40f), "Volver al piso · Esc", boton)) CerrarPrueba();
     }
 
     void Opcion(Rect caja, int fila, string etiqueta, string mision)
     {
-        if (!GUI.Button(new Rect(caja.x + 30f, caja.y + 270f + fila * 56f, 640f, 48f), etiqueta, boton)) return;
+        if (!SonidoCampus.Boton(new Rect(caja.x + 30f, caja.y + 270f + fila * 56f, 640f, 48f), etiqueta, boton)) return;
         ElegirAccion(mision);
     }
 
@@ -642,7 +649,8 @@ public class PisoSiete : MonoBehaviour
     {
         if (ventana != "energia" || director.panel != PanelCampus.PisoSiete || EstadoPisoSiete.Lista("energia")) return;
         if (elegido == cable) cable++;
-        else { cable = 0; error = "Conexión rechazada. Consulta la etiqueta y empieza por cian."; }
+        else { SonidoCampus.Emitir("error", .55f); cable = 0; error = "Conexión rechazada. Consulta la etiqueta y empieza por cian."; }
+        if (cable > 0) SonidoCampus.Emitir("correcto", .45f);
         if (cable != 3) return;
         Completar("energia");
         EstadoPartida.sistemas++;
@@ -654,6 +662,7 @@ public class PisoSiete : MonoBehaviour
     {
         if (ventana != "final" || director.panel != PanelCampus.PisoSiete || !EstadoPisoSiete.PortalListo) return;
         EstadoPartida.pisoCruzado = true;
+        SonidoCampus.Emitir("portal", .8f);
         director.panel = PanelCampus.Fin;
         jugador.GetComponent<JugadorCampus>().Detener();
     }

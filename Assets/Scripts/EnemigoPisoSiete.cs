@@ -16,6 +16,8 @@ public class EnemigoPisoSiete : MonoBehaviour
     float aturdido;
     float memoria;
     bool regreso;
+    float proximoGruñido;
+    bool cazaba;
 
     public void Preparar(PisoSiete piso, Sprite[] animaciones, Vector2 destino, float rapidez, int golpe)
     {
@@ -29,7 +31,7 @@ public class EnemigoPisoSiete : MonoBehaviour
         dano = golpe;
     }
 
-    public void Aturdir() { aturdido = 3f; memoria = 0f; }
+    public void Aturdir() { SonidoCampus.EnPosicion("aturdido", transform.position, .4f); aturdido = 3f; memoria = 0f; }
 
     void Update()
     {
@@ -48,6 +50,14 @@ public class EnemigoPisoSiete : MonoBehaviour
         memoria = ve ? 2f : Mathf.Max(0f, memoria - Time.deltaTime);
         if (ve) ultimaVista = jugador;
         bool caza = memoria > 0f;
+        if (caza) SonidoCampus.Amenaza();
+        if (caza && !cazaba) SonidoCampus.EnPosicion("alerta_monstruo", pos, .6f);
+        cazaba = caza;
+        if (Vector2.Distance(pos, jugador) < 7f && Time.time > proximoGruñido)
+        {
+            SonidoCampus.EnPosicion("monstruo", pos, .55f);
+            proximoGruñido = Time.time + Random.Range(4.5f, 8f);
+        }
         Vector2 destino = caza ? ultimaVista : (regreso ? origen : meta);
         if (!caza && Vector2.Distance(pos, destino) < 0.4f) regreso = !regreso;
         recalcular -= Time.deltaTime;
