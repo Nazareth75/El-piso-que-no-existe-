@@ -1686,11 +1686,11 @@ public class DirectorCampus : MonoBehaviour
         if (npcsGo != null) npcsGo.SetActive(false);
         if (zonaVerde != null) zonaVerde.enabled = false;
 
-        salaAncho = tex.width / 48f;
-        salaAlto = tex.height / 48f;
+        salaAncho = 1672f / 48f;
+        salaAlto = 941f / 48f;
         interiorGo = new GameObject("PisoX");
         var dibujo = interiorGo.AddComponent<SpriteRenderer>();
-        dibujo.sprite = RecursosCampus.ComoSprite(tex, 48f, new Vector2(0.5f, 0.5f));
+        dibujo.sprite = RecursosCampus.ComoSprite(tex, tex.width / salaAncho, new Vector2(0.5f, 0.5f));
         dibujo.sortingOrder = -20;
         interiorGo.transform.position = new Vector3(salaAncho * 0.5f, salaAlto * 0.5f, 0f);
         marcoGo = new GameObject("Marco");
