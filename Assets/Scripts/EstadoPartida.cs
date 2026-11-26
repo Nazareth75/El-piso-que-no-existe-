@@ -31,6 +31,8 @@ public static class EstadoPartida
     public static void Reiniciar()
     {
         RutaPlantaBaja.Reiniciar();
+        EstadoPisoSiete.Reiniciar();
+        SalasAcademicas.Reiniciar();
         sistemas = 0;
         medicina = 0;
         tercera = 0;
@@ -53,7 +55,7 @@ public static class EstadoPartida
     public static string Objetivo()
     {
         if (pisoCruzado) return "Cruzaste el piso que no existe.";
-        if (enPisoX) return "Nivel 3 · El piso que no existe. Llega al círculo del centro. Esquiva a las entidades.";
+        if (enPisoX) return EstadoPisoSiete.Objetivo();
         if (!desperto)
         {
             return RutaPlantaBaja.Objetivo;

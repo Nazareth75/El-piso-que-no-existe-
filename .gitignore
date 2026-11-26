@@ -110,6 +110,7 @@ InitTestScene*.unity*
 *.user
 *.suo
 /PongAula/
+/work/
 
 **/Library/
 

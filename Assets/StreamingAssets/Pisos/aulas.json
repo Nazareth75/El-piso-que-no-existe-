@@ -1,0 +1,414 @@
+{
+  "salas": [
+    {
+      "id": "aula_2_01",
+      "piso": 2,
+      "tipo": 1,
+      "nombre": "Sala MAC",
+      "x": 7.0,
+      "y": 13.5,
+      "puertaX": 295,
+      "puertaY": 375
+    },
+    {
+      "id": "aula_2_02",
+      "piso": 2,
+      "tipo": 1,
+      "nombre": "Centro de desarrollo de software",
+      "x": 14.375,
+      "y": 13.5,
+      "puertaX": 600,
+      "puertaY": 375
+    },
+    {
+      "id": "aula_2_03",
+      "piso": 2,
+      "tipo": 1,
+      "nombre": "Laboratorio de computación 1",
+      "x": 23.25,
+      "y": 13.5,
+      "puertaX": 970,
+      "puertaY": 375
+    },
+    {
+      "id": "aula_2_04",
+      "piso": 2,
+      "tipo": 1,
+      "nombre": "Laboratorio de computación 3",
+      "x": 27.125,
+      "y": 13.5,
+      "puertaX": 1135,
+      "puertaY": 375
+    },
+    {
+      "id": "aula_2_05",
+      "piso": 2,
+      "tipo": 1,
+      "nombre": "Laboratorio de informática 2",
+      "x": 31.25,
+      "y": 13.5,
+      "puertaX": 1305,
+      "puertaY": 375
+    },
+    {
+      "id": "aula_2_06",
+      "piso": 2,
+      "tipo": 1,
+      "nombre": "Laboratorio de postgrado",
+      "x": 6.875,
+      "y": 9.0,
+      "puertaX": 285,
+      "puertaY": 565
+    },
+    {
+      "id": "aula_2_07",
+      "piso": 2,
+      "tipo": 1,
+      "nombre": "Laboratorio de computación 2",
+      "x": 22.375,
+      "y": 5.5,
+      "puertaX": 935,
+      "puertaY": 710
+    },
+    {
+      "id": "aula_2_08",
+      "piso": 2,
+      "tipo": 0,
+      "nombre": "Aula 201",
+      "x": 33.25,
+      "y": 13.625,
+      "puertaX": 1390,
+      "puertaY": 355
+    },
+    {
+      "id": "aula_2_09",
+      "piso": 2,
+      "tipo": 0,
+      "nombre": "Aula 202",
+      "x": 33.25,
+      "y": 10.375,
+      "puertaX": 1390,
+      "puertaY": 505
+    },
+    {
+      "id": "aula_2_10",
+      "piso": 2,
+      "tipo": 0,
+      "nombre": "Aula 203",
+      "x": 33.25,
+      "y": 6.25,
+      "puertaX": 1390,
+      "puertaY": 680
+    },
+    {
+      "id": "aula_2_11",
+      "piso": 2,
+      "tipo": 0,
+      "nombre": "Aula 204",
+      "x": 29.75,
+      "y": 5.5,
+      "puertaX": 1245,
+      "puertaY": 710
+    },
+    {
+      "id": "aula_2_12",
+      "piso": 2,
+      "tipo": 0,
+      "nombre": "Aula 205",
+      "x": 7.75,
+      "y": 7.875,
+      "puertaX": 325,
+      "puertaY": 610
+    },
+    {
+      "id": "aula_3_01",
+      "piso": 3,
+      "tipo": 2,
+      "nombre": "Sala de semiología",
+      "x": 7.375,
+      "y": 13.0,
+      "puertaX": 310,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_3_02",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 301",
+      "x": 12.25,
+      "y": 13.0,
+      "puertaX": 510,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_3_03",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 302",
+      "x": 16.375,
+      "y": 13.0,
+      "puertaX": 685,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_3_04",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 303",
+      "x": 22.0,
+      "y": 13.125,
+      "puertaX": 920,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_3_05",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 304",
+      "x": 27.875,
+      "y": 13.125,
+      "puertaX": 1165,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_3_06",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 305",
+      "x": 32.75,
+      "y": 12.75,
+      "puertaX": 1390,
+      "puertaY": 410
+    },
+    {
+      "id": "aula_3_07",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 306",
+      "x": 7.75,
+      "y": 9.625,
+      "puertaX": 325,
+      "puertaY": 540
+    },
+    {
+      "id": "aula_3_08",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 307",
+      "x": 7.875,
+      "y": 7.875,
+      "puertaX": 330,
+      "puertaY": 610
+    },
+    {
+      "id": "aula_3_09",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 308",
+      "x": 22.0,
+      "y": 5.25,
+      "puertaX": 920,
+      "puertaY": 720
+    },
+    {
+      "id": "aula_3_10",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 309",
+      "x": 32.25,
+      "y": 8.125,
+      "puertaX": 1350,
+      "puertaY": 600
+    },
+    {
+      "id": "aula_3_11",
+      "piso": 3,
+      "tipo": 0,
+      "nombre": "Aula 310",
+      "x": 32.75,
+      "y": 6.125,
+      "puertaX": 1370,
+      "puertaY": 685
+    },
+    {
+      "id": "aula_4_01",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 401",
+      "x": 7.375,
+      "y": 13.25,
+      "puertaX": 310,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_4_02",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 402",
+      "x": 12.25,
+      "y": 13.25,
+      "puertaX": 510,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_4_03",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 403",
+      "x": 16.125,
+      "y": 13.25,
+      "puertaX": 675,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_4_04",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 404",
+      "x": 22.375,
+      "y": 13.125,
+      "puertaX": 920,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_4_05",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 405",
+      "x": 27.875,
+      "y": 13.25,
+      "puertaX": 1165,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_4_06",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 406",
+      "x": 32.875,
+      "y": 12.75,
+      "puertaX": 1390,
+      "puertaY": 410
+    },
+    {
+      "id": "aula_4_07",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 407",
+      "x": 7.75,
+      "y": 9.875,
+      "puertaX": 325,
+      "puertaY": 530
+    },
+    {
+      "id": "aula_4_08",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 408",
+      "x": 7.75,
+      "y": 7.875,
+      "puertaX": 325,
+      "puertaY": 610
+    },
+    {
+      "id": "aula_4_09",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 409",
+      "x": 32.5,
+      "y": 8.375,
+      "puertaX": 1360,
+      "puertaY": 590
+    },
+    {
+      "id": "aula_4_10",
+      "piso": 4,
+      "tipo": 0,
+      "nombre": "Aula 410",
+      "x": 32.5,
+      "y": 6.125,
+      "puertaX": 1360,
+      "puertaY": 685
+    },
+    {
+      "id": "aula_5_01",
+      "piso": 5,
+      "tipo": 0,
+      "nombre": "Aula 501",
+      "x": 7.375,
+      "y": 13.25,
+      "puertaX": 310,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_5_02",
+      "piso": 5,
+      "tipo": 0,
+      "nombre": "Aula 502",
+      "x": 12.25,
+      "y": 13.25,
+      "puertaX": 510,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_5_03",
+      "piso": 5,
+      "tipo": 0,
+      "nombre": "Aula 503",
+      "x": 16.125,
+      "y": 13.125,
+      "puertaX": 675,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_5_04",
+      "piso": 5,
+      "tipo": 0,
+      "nombre": "Aula 504",
+      "x": 22.0,
+      "y": 13.125,
+      "puertaX": 920,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_5_05",
+      "piso": 5,
+      "tipo": 0,
+      "nombre": "Aula 505",
+      "x": 28.25,
+      "y": 13.125,
+      "puertaX": 1165,
+      "puertaY": 390
+    },
+    {
+      "id": "aula_5_06",
+      "piso": 5,
+      "tipo": 0,
+      "nombre": "Aula 506",
+      "x": 32.875,
+      "y": 12.75,
+      "puertaX": 1390,
+      "puertaY": 410
+    },
+    {
+      "id": "aula_5_07",
+      "piso": 5,
+      "tipo": 0,
+      "nombre": "Aula 507",
+      "x": 7.75,
+      "y": 9.875,
+      "puertaX": 325,
+      "puertaY": 530
+    },
+    {
+      "id": "aula_5_08",
+      "piso": 5,
+      "tipo": 0,
+      "nombre": "Aula 508",
+      "x": 22.0,
+      "y": 5.0,
+      "puertaX": 920,
+      "puertaY": 720
+    }
+  ]
+}
